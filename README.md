@@ -1,6 +1,6 @@
 <div align="center">
 
-![MCP Playbook](/assets/logo.png)
+<div align="center"> <img src="./assets/logo.png" alt="MCP Playybook" width="80%" height="80%"/>
 
 # MCP Playbook
 
@@ -15,7 +15,7 @@
 
 ---
 
-<img src="https://raw.githubusercontent.com/your-org/mcp-playbook/main/assets/screenshot.png" alt="MCP Playbook UI" width="100%" />
+<img src="./assets/logo.png" alt="MCP Playbook UI" width="50%" height="50%"/>
 
 </div>
 
