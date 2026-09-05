@@ -9,6 +9,7 @@ node_modules/
 HOW-TO-RUN.md
 CREATOR-GUIDE.md
 CONTRIBUTING.md
+DEPLOYMENT-GITHUB-PAGES.md
 
 # ── Build output ───────────────────────────────────────────────────
 # dist/ is built by tsup + Vite before publishing
