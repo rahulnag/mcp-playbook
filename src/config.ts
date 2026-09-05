@@ -4,7 +4,7 @@
  * Type definitions and the defineConfig() helper.
  *
  * Users write:
- *   import { defineConfig } from 'mcp-storybook'
+ *   import { defineConfig } from 'mcp-playbook'
  *   export default defineConfig({ ... })
  *
  * Same pattern as Vite, Vitest, etc.
@@ -81,7 +81,7 @@ export interface PlaybookConfig {
  * This is the primary API users interact with.
  *
  * Usage:
- *   import { defineConfig } from 'mcp-storybook'
+ *   import { defineConfig } from 'mcp-playbook'
  *   export default defineConfig({ servers: [...] })
  */
 export function defineConfig(config: PlaybookConfig): PlaybookConfig {

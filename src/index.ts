@@ -1,10 +1,10 @@
 /**
  * src/index.ts
  *
- * Public API of the mcp-storybook npm package.
+ * Public API of the mcp-playbook npm package.
  *
  * What users import:
- *   import { defineConfig } from 'mcp-storybook'
+ *   import { defineConfig } from 'mcp-playbook'
  */
 
 export { defineConfig }             from './config.js'

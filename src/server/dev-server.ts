@@ -43,7 +43,7 @@ function fallbackHTML(port: number): string {
 <html>
 <head>
   <meta charset="UTF-8"/>
-  <title>MCP Storybook</title>
+  <title>MCP Playbook</title>
   <style>
     body { font-family: monospace; background: #080808; color: #e2e0d8;
            display: flex; align-items: center; justify-content: center;
@@ -55,9 +55,9 @@ function fallbackHTML(port: number): string {
 </head>
 <body>
   <div style="font-size:32px">⚡</div>
-  <h2 style="margin:0">MCP Storybook API is running</h2>
+  <h2 style="margin:0">MCP Playbook API is running</h2>
   <p>The React UI bundle was not found at <code>dist/client/</code></p>
-  <p>Run <code>npm run build:client</code> inside the mcp-storybook library to build it.</p>
+  <p>Run <code>npm run build:client</code> inside the mcp-playbook library to build it.</p>
   <p>API available at <code>http://localhost:${port}/api/servers</code></p>
 </body>
 </html>`
@@ -138,7 +138,7 @@ export async function startDevServer(options: DevServerOptions) {
   app.get('/api/servers', async (_req, res) => {
     try {
       res.json({
-        title:       cachedConfig?.title       || 'MCP Storybook',
+        title:       cachedConfig?.title       || 'MCP Playbook',
         description: cachedConfig?.description || '',
         theme:       cachedConfig?.theme       || {},
         servers:     cachedServers

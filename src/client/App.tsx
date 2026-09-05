@@ -1,5 +1,5 @@
 // src/client/App.tsx
-// Full MCP Storybook UI — wired to real dev server API
+// Full MCP Playbook UI — wired to real dev server API
 // Designed for backend/fullstack developers building MCP tools
 
 import { useState, useCallback } from 'react'
@@ -460,7 +460,7 @@ function ToolDetail({ tool, server }: { tool: DiscoveredTool; server: Discovered
               }}>
                 <p style={{ marginBottom: '8px' }}>No examples defined for this tool.</p>
                 <p style={{ fontSize: '12px' }}>
-                  Add them in <code style={{ color: C.accent }}>storybook.config.ts</code> under <code style={{ color: C.accent }}>examples.{tool.name}</code>
+                  Add them in <code style={{ color: C.accent }}>playbook.config.ts</code> under <code style={{ color: C.accent }}>examples.{tool.name}</code>
                 </p>
               </div>
             ) : (
@@ -709,7 +709,7 @@ export default function App() {
         flexShrink: 0,
       }}>
         <span style={{ fontSize: '14px', fontWeight: 700, color: C.text }}>
-          ⚡ {data?.title || 'MCP Storybook'}
+          ⚡ {data?.title || 'MCP Playbook'}
         </span>
         <div style={{ width: '1px', height: '18px', background: C.border }} />
         {loading ? (
@@ -848,7 +848,7 @@ export default function App() {
                 {error}
                 <br />
                 <span style={{ color: C.muted, fontSize: '11px' }}>
-                  Is mcp-storybook dev server running?
+                  Is mcp-playbook dev server running?
                 </span>
               </div>
             )}

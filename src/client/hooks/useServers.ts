@@ -1,5 +1,5 @@
 // src/client/hooks/useServers.ts
-// Fetches server + tool data from the mcp-storybook dev server
+// Fetches server + tool data from the mcp-playbook dev server
 // GET /api/servers — returns all discovered MCP servers and their tools
 
 import { useState, useEffect, useCallback } from 'react'

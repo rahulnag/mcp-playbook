@@ -14,7 +14,7 @@ CONTRIBUTING.md
 # dist/ is built by tsup + Vite before publishing
 # it should NOT be committed — generated fresh every build
 dist/
-storybook-dist/
+playbook-dist/
 playbook-dist/
 build/
 out/

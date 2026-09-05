@@ -1,27 +1,27 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/your-org/mcp-storybook/main/assets/logo.png" alt="MCP Storybook" width="80" />
+<img src="https://raw.githubusercontent.com/your-org/mcp-playbook/main/assets/logo.png" alt="MCP Playbook" width="80" />
 
-# MCP Storybook
+# MCP Playbook
 
-**Storybook for MCP tools** — auto-generates interactive documentation and a live playground for your MCP servers.
+**Playbook for MCP tools** — auto-generates interactive documentation and a live playground for your MCP servers.
 
-[![npm version](https://img.shields.io/npm/v/mcp-storybook?color=7c74d8&labelColor=1a1a1a)](https://www.npmjs.com/package/mcp-storybook)
-[![license](https://img.shields.io/npm/l/mcp-storybook?color=5dcaa5&labelColor=1a1a1a)](LICENSE)
-[![node](https://img.shields.io/node/v/mcp-storybook?color=5dcaa5&labelColor=1a1a1a)](https://nodejs.org)
+[![npm version](https://img.shields.io/npm/v/mcp-playbook?color=7c74d8&labelColor=1a1a1a)](https://www.npmjs.com/package/mcp-playbook)
+[![license](https://img.shields.io/npm/l/mcp-playbook?color=5dcaa5&labelColor=1a1a1a)](LICENSE)
+[![node](https://img.shields.io/node/v/mcp-playbook?color=5dcaa5&labelColor=1a1a1a)](https://nodejs.org)
 [![MCP spec](https://img.shields.io/badge/MCP%20spec-2026--07--28-7c74d8?labelColor=1a1a1a)](https://spec.modelcontextprotocol.io)
 
 [Quick Start](#-quick-start) · [Configuration](#-configuration) · [CLI](#-cli-reference) · [Who is this for](#-who-is-this-for) · [Comparison](#-how-it-compares) · [Server structure](#-mcp-server-file-structure--what-you-need-to-know) · [Roadmap](#-roadmap)
 
 ---
 
-<img src="https://raw.githubusercontent.com/your-org/mcp-storybook/main/assets/screenshot.png" alt="MCP Storybook UI" width="100%" />
+<img src="https://raw.githubusercontent.com/your-org/mcp-playbook/main/assets/screenshot.png" alt="MCP Playbook UI" width="100%" />
 
 </div>
 
 ---
 
-## ⚡ What is MCP Storybook?
+## ⚡ What is MCP Playbook?
 
 If you have built MCP tools, you know the problem:
 
@@ -31,13 +31,13 @@ If you have built MCP tools, you know the problem:
 - **New developers** spend hours figuring out what the server can do
 - Tool documentation **goes stale** the moment anyone updates the server
 
-**MCP Storybook** solves all of this — the same way Storybook solved it for React components.
+**MCP Playbook** solves all of this — the same way Playbook solved it for React components.
 
 It connects to your MCP server, **auto-discovers every tool** from its JSON Schema, and renders a beautiful interactive documentation site with a live playground. Zero manual documentation. Always up to date.
 
 ```bash
-npx mcp-storybook init    # create config — 30 seconds
-npx mcp-storybook dev     # open http://localhost:4242
+npx mcp-playbook init    # create config — 30 seconds
+npx mcp-playbook dev     # open http://localhost:4242
 ```
 
 ---
@@ -46,7 +46,7 @@ npx mcp-storybook dev     # open http://localhost:4242
 
 MCP (Model Context Protocol) is becoming the standard for exposing AI tools. Teams are building MCP servers with 10, 50, even 200+ tools. But there is no standard way to:
 
-| Problem | Without MCP Storybook | With MCP Storybook |
+| Problem | Without MCP Playbook | With MCP Playbook |
 |---|---|---|
 | Discover available tools | Read source code or raw JSON | Browse a searchable UI |
 | Understand a tool's parameters | Read the schema manually | Auto-generated docs with type badges |
@@ -65,7 +65,7 @@ If you are **building an MCP server** in any language, this library documents an
 
 ```
 You build: Node.js MCP server with 50 tools
-You run:   npx mcp-storybook dev
+You run:   npx mcp-playbook dev
 You get:   Complete interactive docs for all 50 tools instantly
 ```
 
@@ -77,7 +77,7 @@ You get:   Complete interactive docs for all 50 tools instantly
 
 ### ✅ Secondary audience — MCP tool consumers
 
-If you are **consuming MCP tools** built by another team, MCP Storybook is your reference guide — the same way Swagger UI documents REST APIs you consume.
+If you are **consuming MCP tools** built by another team, MCP Playbook is your reference guide — the same way Swagger UI documents REST APIs you consume.
 
 ```
 Your team: building AI agents that call backend MCP tools
@@ -99,7 +99,7 @@ They see:  every tool, every parameter, live testing UI
 
 ## ❌ Who is this NOT for?
 
-| Situation | Why MCP Storybook does not fit |
+| Situation | Why MCP Playbook does not fit |
 |---|---|
 | Pure React frontend with no MCP server | No MCP tools to document |
 | REST-only API (no MCP) | Use Swagger / OpenAPI instead |
@@ -110,7 +110,7 @@ They see:  every tool, every parameter, live testing UI
 
 ## 🌐 Language support
 
-MCP Storybook connects over the **MCP protocol** — it does not care what language your server is written in. As long as your server speaks valid MCP, it works.
+MCP Playbook connects over the **MCP protocol** — it does not care what language your server is written in. As long as your server speaks valid MCP, it works.
 
 | Server language | Transport | Works? | Notes |
 |---|---|---|---|
@@ -120,24 +120,24 @@ MCP Storybook connects over the **MCP protocol** — it does not care what langu
 | **Rust** | HTTP, SSE | ✅ | Any Rust MCP library |
 | **Any language** | HTTP, SSE | ✅ | If it speaks MCP protocol |
 
-> **Key insight:** MCP Storybook calls `tools/list` — a core MCP protocol method that every compliant server must implement. The server's internal language and framework are completely invisible to the library.
+> **Key insight:** MCP Playbook calls `tools/list` — a core MCP protocol method that every compliant server must implement. The server's internal language and framework are completely invisible to the library.
 
 ---
 
 ## 🔄 How it compares
 
-### MCP Storybook vs MCP Inspector
+### MCP Playbook vs MCP Inspector
 
 The most common question. These are **complementary tools**, not competitors.
 
-| Feature | `@modelcontextprotocol/inspector` | `mcp-storybook` |
+| Feature | `@modelcontextprotocol/inspector` | `mcp-playbook` |
 |---|---|---|
 | **Purpose** | Debug and validate protocol | Document and share with team |
 | **Audience** | Server author (you) | Whole team + external devs |
 | **Hosting** | Localhost only — not shareable | Deploy to any server or URL |
 | **Persistent examples** | ❌ Fresh every session | ✅ Defined in config, committed to git |
 | **Multi-server view** | ❌ One server at a time | ✅ All servers in one dashboard |
-| **Static deployable docs** | ❌ Needs live Node process | ✅ `mcp-storybook build` → static site |
+| **Static deployable docs** | ❌ Needs live Node process | ✅ `mcp-playbook build` → static site |
 | **Raw JSON-RPC logs** | ✅ Full protocol inspection | ❌ Not the goal |
 | **OAuth debugging** | ✅ Built-in | 🗓 Planned |
 | **Team sharing via URL** | ❌ Per-launch token, localhost only | ✅ Deploy and share |
@@ -146,11 +146,11 @@ The most common question. These are **complementary tools**, not competitors.
 
 **Use the Inspector when:** you are building a server and need to debug protocol messages, test OAuth flows, or inspect raw JSON-RPC communication.
 
-**Use MCP Storybook when:** you want permanent team documentation, a shareable URL, onboarding for new developers, or a deployable static docs site.
+**Use MCP Playbook when:** you want permanent team documentation, a shareable URL, onboarding for new developers, or a deployable static docs site.
 
-### MCP Storybook vs Swagger UI
+### MCP Playbook vs Swagger UI
 
-| Feature | Swagger UI | MCP Storybook |
+| Feature | Swagger UI | MCP Playbook |
 |---|---|---|
 | Protocol | REST / OpenAPI | MCP (Model Context Protocol) |
 | Auto-discovery | Reads OpenAPI spec file | Connects to live MCP server |
@@ -173,34 +173,34 @@ The most common question. These are **complementary tools**, not competitors.
 
 ```bash
 # npm
-npm install --save-dev mcp-storybook
+npm install --save-dev mcp-playbook
 
 # pnpm
-pnpm add -D mcp-storybook
+pnpm add -D mcp-playbook
 
 # yarn
-yarn add -D mcp-storybook
+yarn add -D mcp-playbook
 
 # or run without installing
-npx mcp-storybook init
+npx mcp-playbook init
 ```
 
 ### Step 2 — Create config
 
 ```bash
-npx mcp-storybook init
+npx mcp-playbook init
 ```
 
-This creates `storybook.config.ts` in your current directory.
+This creates `playbook.config.ts` in your current directory.
 
 ### Step 3 — Point it at your server
 
 ```typescript
-// storybook.config.ts
-import { defineConfig } from 'mcp-storybook'
+// playbook.config.ts
+import { defineConfig } from 'mcp-playbook'
 
 export default defineConfig({
-  title: 'My API Storybook',
+  title: 'My API Playbook',
   servers: [
     {
       name:      'My MCP Server',
@@ -215,7 +215,7 @@ export default defineConfig({
 ### Step 4 — Start
 
 ```bash
-npx mcp-storybook dev
+npx mcp-playbook dev
 ```
 
 Browser opens at **http://localhost:4242** showing all your tools with auto-generated documentation and a live playground.
@@ -224,12 +224,12 @@ Browser opens at **http://localhost:4242** showing all your tools with auto-gene
 
 ## ⚙️ Configuration
 
-All configuration lives in `storybook.config.ts` at your project root. Use `defineConfig()` for TypeScript autocomplete.
+All configuration lives in `playbook.config.ts` at your project root. Use `defineConfig()` for TypeScript autocomplete.
 
 ### Full reference
 
 ```typescript
-import { defineConfig } from 'mcp-storybook'
+import { defineConfig } from 'mcp-playbook'
 
 export default defineConfig({
 
@@ -272,7 +272,7 @@ export default defineConfig({
 
   // ── Optional ──────────────────────────────────────────────────────
 
-  title:       'Acme Corp API Storybook',
+  title:       'Acme Corp API Playbook',
   description: 'Interactive docs for all internal MCP tools',
   port:        4242,                      // default: 4242
 
@@ -328,7 +328,7 @@ export default defineConfig({
 Pass credentials via the `env` field. Your MCP server reads them from environment variables.
 
 ```typescript
-// storybook.config.ts
+// playbook.config.ts
 servers: [
   {
     name:      'Atlassian API',
@@ -347,7 +347,7 @@ Set your token in the shell before running:
 
 ```bash
 export ATLASSIAN_TOKEN=your_personal_api_token
-npx mcp-storybook dev
+npx mcp-playbook dev
 ```
 
 ### For HTTP servers with auth headers
@@ -380,60 +380,60 @@ For internal team deployments today: use a shared service account token passed v
 
 ## 💻 CLI Reference
 
-All commands are available via `npx mcp-storybook` or the `mcp-storybook` binary if installed globally.
+All commands are available via `npx mcp-playbook` or the `mcp-playbook` binary if installed globally.
 
-### `mcp-storybook dev`
+### `mcp-playbook dev`
 
 Starts the development server with hot reload. Opens browser automatically.
 
 ```bash
-mcp-storybook dev [options]
+mcp-playbook dev [options]
 
 Options:
   -p, --port <port>      Port to run on (default: 4242)
-  -c, --config <path>    Path to config file (default: storybook.config.ts)
+  -c, --config <path>    Path to config file (default: playbook.config.ts)
   --no-open              Do not open browser automatically
 ```
 
 ```bash
 # Examples
-mcp-storybook dev
-mcp-storybook dev --port 8080
-mcp-storybook dev --config ./docs/storybook.config.ts
-mcp-storybook dev --no-open
+mcp-playbook dev
+mcp-playbook dev --port 8080
+mcp-playbook dev --config ./docs/playbook.config.ts
+mcp-playbook dev --no-open
 ```
 
-### `mcp-storybook build`
+### `mcp-playbook build`
 
 Connects to all configured servers, discovers all tools, and generates a **static documentation site**. Deploy it anywhere — no server required at view time.
 
 ```bash
-mcp-storybook build [options]
+mcp-playbook build [options]
 
 Options:
-  -o, --output <dir>     Output directory (default: storybook-dist)
-  -c, --config <path>    Path to config file (default: storybook.config.ts)
+  -o, --output <dir>     Output directory (default: playbook-dist)
+  -c, --config <path>    Path to config file (default: playbook.config.ts)
 ```
 
 ```bash
 # Examples
-mcp-storybook build
-mcp-storybook build --output ./docs-site
+mcp-playbook build
+mcp-playbook build --output ./docs-site
 ```
 
-Deploy `storybook-dist/` to **GitHub Pages, Vercel, Netlify**, or any static host.
+Deploy `playbook-dist/` to **GitHub Pages, Vercel, Netlify**, or any static host.
 
-### `mcp-storybook init`
+### `mcp-playbook init`
 
-Scaffolds a `storybook.config.ts` file in the current directory. Safe to run — will not overwrite an existing config.
+Scaffolds a `playbook.config.ts` file in the current directory. Safe to run — will not overwrite an existing config.
 
 ```bash
-mcp-storybook init
+mcp-playbook init
 ```
 
 ---
 
-## 🖥️ The Storybook UI
+## 🖥️ The Playbook UI
 
 ### Sidebar
 
@@ -466,7 +466,7 @@ Click **Run tool** to execute against the real MCP server. Response shown with s
 
 ### Examples tab
 
-Shows all examples you defined in `storybook.config.ts`. Click **Load →** to pre-fill the Try tab with those values. If no examples are defined, shows instructions for adding them.
+Shows all examples you defined in `playbook.config.ts`. Click **Load →** to pre-fill the Try tab with those values. If no examples are defined, shows instructions for adding them.
 
 ### Schema tab
 
@@ -474,16 +474,16 @@ Shows the raw JSON Schema and the complete MCP tool definition — ready to copy
 
 ### Hot reload
 
-When running `mcp-storybook dev`, the config file is watched. Add a new server or modify examples → browser refreshes automatically without a page reload.
+When running `mcp-playbook dev`, the config file is watched. Add a new server or modify examples → browser refreshes automatically without a page reload.
 
 ---
 
-## 🏗️ How MCP Storybook works
+## 🏗️ How MCP Playbook works
 
 ```
-Your storybook.config.ts
+Your playbook.config.ts
           ↓
-mcp-storybook reads config
+mcp-playbook reads config
           ↓
 Connects to each MCP server
 (spawns process for stdio / connects to URL for HTTP/SSE)
@@ -505,7 +505,7 @@ Schema tab:   shows raw JSON for copy-paste
 
 ### The standard it relies on
 
-Every MCP server regardless of language or library must implement `tools/list` — it is a core method of the MCP specification (maintained by Anthropic, open standard). This is why MCP Storybook works with any compliant server:
+Every MCP server regardless of language or library must implement `tools/list` — it is a core method of the MCP specification (maintained by Anthropic, open standard). This is why MCP Playbook works with any compliant server:
 
 ```
 Atlassian MCP server → implements tools/list ✓
@@ -523,7 +523,7 @@ Any future server    → implements tools/list ✓
 An MCP server always has **one entry point file** — the file MCP clients connect to. But internally it can import from as many files as you want.
 
 ```
-From outside (mcp-storybook, Claude, any MCP client):
+From outside (mcp-playbook, Claude, any MCP client):
   sees → one process running server.js
   does not know → how many internal files exist
 
@@ -534,7 +534,7 @@ From inside (your code):
   ... 100 files imported — all invisible to the outside
 ```
 
-In your `storybook.config.ts` you always point at the **entry file only**:
+In your `playbook.config.ts` you always point at the **entry file only**:
 
 ```typescript
 servers: [
@@ -550,7 +550,7 @@ servers: [
 
 ### Multiple MCP servers — each its own entry file
 
-You can run multiple completely separate MCP servers — each its own process, its own entry file, its own set of tools. MCP Storybook connects to all of them and shows everything in one unified dashboard.
+You can run multiple completely separate MCP servers — each its own process, its own entry file, its own set of tools. MCP Playbook connects to all of them and shows everything in one unified dashboard.
 
 ```
 Real world example — Atlassian:
@@ -561,7 +561,7 @@ Real world example — Atlassian:
 ```
 
 ```typescript
-// storybook.config.ts — connect to all three at once
+// playbook.config.ts — connect to all three at once
 export default defineConfig({
   servers: [
     {
@@ -586,15 +586,15 @@ export default defineConfig({
 })
 ```
 
-MCP Storybook spawns all three as separate processes and shows all their tools in one searchable UI — grouped by server, filterable, searchable.
+MCP Playbook spawns all three as separate processes and shows all their tools in one searchable UI — grouped by server, filterable, searchable.
 
-> **Key rule:** one entry point per MCP server. How many files live inside that server is entirely your choice and completely invisible to MCP Storybook.
+> **Key rule:** one entry point per MCP server. How many files live inside that server is entirely your choice and completely invisible to MCP Playbook.
 
 ---
 
 ## 📂 Structuring a large MCP server (100+ tools)
 
-For servers with many tools, use the **one file per tool + auto-loader** pattern. You never register tools manually in `storybook.config.ts` — MCP Storybook discovers them all automatically from the server.
+For servers with many tools, use the **one file per tool + auto-loader** pattern. You never register tools manually in `playbook.config.ts` — MCP Playbook discovers them all automatically from the server.
 
 ```
 src/
@@ -673,17 +673,17 @@ serveStdio(() => {
 })
 ```
 
-Adding a new tool = create one new file. `storybook.config.ts` never changes.
+Adding a new tool = create one new file. `playbook.config.ts` never changes.
 
 ---
 
-## 🚢 Deploying MCP Storybook
+## 🚢 Deploying MCP Playbook
 
 ### Deploy to GitHub Pages
 
 ```yaml
-# .github/workflows/deploy-storybook.yml
-name: Deploy MCP Storybook
+# .github/workflows/deploy-playbook.yml
+name: Deploy MCP Playbook
 
 on:
   push:
@@ -700,7 +700,7 @@ jobs:
 
       - run: npm install
       - run: npm run build          # build your MCP server first
-      - run: npx mcp-storybook build --output ./docs
+      - run: npx mcp-playbook build --output ./docs
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -718,17 +718,17 @@ Every push to `main` auto-rebuilds and redeploys your docs.
 npm install -g vercel
 
 # Build static docs
-npx mcp-storybook build
+npx mcp-playbook build
 
 # Deploy
-vercel storybook-dist/
+vercel playbook-dist/
 ```
 
 ### Deploy on your own server (always-on)
 
 ```bash
 # Build static docs
-npx mcp-storybook build --output /var/www/mcp-docs
+npx mcp-playbook build --output /var/www/mcp-docs
 
 # Serve with nginx — no Node.js needed at view time
 # Just static files
@@ -738,12 +738,12 @@ npx mcp-storybook build --output /var/www/mcp-docs
 
 ## 🔧 Local development (for library contributors)
 
-If you are contributing to MCP Storybook itself:
+If you are contributing to MCP Playbook itself:
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-org/mcp-storybook
-cd mcp-storybook
+git clone https://github.com/your-org/mcp-playbook
+cd mcp-playbook
 
 # Install dependencies
 npm install
@@ -752,7 +752,7 @@ npm install
 npm run build
 
 # Test against the included example server
-npx mcp-storybook dev --config example/storybook.config.ts
+npx mcp-playbook dev --config example/playbook.config.ts
 
 # Watch mode — rebuilds on every save
 npm run dev          # Terminal 1: rebuilds server/CLI
@@ -760,30 +760,30 @@ npm run dev:client   # Terminal 2: rebuilds React UI
 
 # Test as a real user would install it
 npm pack
-# creates mcp-storybook-0.1.0.tgz
+# creates mcp-playbook-0.1.0.tgz
 
 mkdir /tmp/test-project && cd /tmp/test-project
 npm init -y
-npm install /path/to/mcp-storybook-0.1.0.tgz
-npx mcp-storybook init
-npx mcp-storybook dev
+npm install /path/to/mcp-playbook-0.1.0.tgz
+npx mcp-playbook init
+npx mcp-playbook dev
 ```
 
 ### Using npm link for active development
 
 ```bash
 # Register library globally as a symlink
-cd mcp-storybook
+cd mcp-playbook
 npm run build
 npm link
 
 # Use in any project
 cd your-project
-npm link mcp-storybook
-npx mcp-storybook dev
+npm link mcp-playbook
+npx mcp-playbook dev
 
 # After making changes
-cd mcp-storybook
+cd mcp-playbook
 npm run build     # changes available immediately — no relinking needed
 ```
 
@@ -794,10 +794,10 @@ npm run build     # changes available immediately — no relinking needed
 ### Config not found
 
 ```bash
-Error: Config not found: storybook.config.ts
+Error: Config not found: playbook.config.ts
 
 Fix:
-npx mcp-storybook init
+npx mcp-playbook init
 ```
 
 ### Port already in use
@@ -806,7 +806,7 @@ npx mcp-storybook init
 Error: Port 4242 is already in use
 
 Fix:
-npx mcp-storybook dev --port 4243
+npx mcp-playbook dev --port 4243
 ```
 
 ### Server shows as disconnected
@@ -825,7 +825,7 @@ Check the following in order:
 
 3. **Environment variables** — if your server needs `API_KEY` etc., pass them via `env` in config
 
-4. **Check the terminal** — the mcp-storybook dev terminal shows connection error details
+4. **Check the terminal** — the mcp-playbook dev terminal shows connection error details
 
 ### dist/ not found (library developers only)
 
@@ -849,10 +849,10 @@ Set in your shell:
 
 ```bash
 export API_TOKEN=your_token_here
-npx mcp-storybook dev
+npx mcp-playbook dev
 ```
 
-### Changes to storybook.config.ts not picked up
+### Changes to playbook.config.ts not picked up
 
 The config is watched automatically. If it is not updating, click the **↻ Refresh** button in the top bar or restart the dev server.
 
@@ -865,7 +865,7 @@ The config is watched automatically. If it is not updating, click the **↻ Refr
 | Core: auto-discovery, docs, Try it, Examples, Schema tabs | ✅ Done |
 | stdio / HTTP / SSE transport | ✅ Done |
 | Hot reload on config change | ✅ Done |
-| Static site build (`mcp-storybook build`) | ✅ Done |
+| Static site build (`mcp-playbook build`) | ✅ Done |
 | Multi-server dashboard | ✅ Done |
 | Tool call history / session log | 🗓 Planned |
 | Export as curl / fetch / MCP SDK snippet | 🗓 Planned |
@@ -886,10 +886,10 @@ PRs and issues are welcome. The MCP ecosystem needs this tool.
 
 ```bash
 # Clone, build, test
-git clone https://github.com/your-org/mcp-storybook
+git clone https://github.com/your-org/mcp-playbook
 npm install
 npm run build
-npx mcp-storybook dev --config example/storybook.config.ts
+npx mcp-playbook dev --config example/playbook.config.ts
 ```
 
 Please open an issue before submitting large PRs so we can discuss the approach.
@@ -904,7 +904,7 @@ MIT © your-org
 
 <div align="center">
 
-**mcp-storybook** · [npm](https://www.npmjs.com/package/mcp-storybook) · [GitHub](https://github.com/your-org/mcp-storybook) · [Issues](https://github.com/your-org/mcp-storybook/issues)
+**mcp-playbook** · [npm](https://www.npmjs.com/package/mcp-playbook) · [GitHub](https://github.com/your-org/mcp-playbook) · [Issues](https://github.com/your-org/mcp-playbook/issues)
 
 *If this library saves you time, give it a ⭐ on GitHub*
 

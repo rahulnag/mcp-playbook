@@ -3,7 +3,7 @@
  *
  * Connects to MCP servers and discovers their tools.
  * This is the bridge between the user's MCP servers and
- * the Storybook UI.
+ * the Playbook UI.
  *
  * Supports:
  *   - stdio transport (spawn a process, talk over stdin/stdout)
@@ -87,7 +87,7 @@ async function connectToServer(
 ): Promise<DiscoveredServer> {
 
   const client = new Client(
-    { name: 'mcp-storybook', version: '0.1.0' },
+    { name: 'mcp-playbook', version: '0.1.0' },
     { capabilities: {} }
   )
 
@@ -157,7 +157,7 @@ export async function executeTool(
 
   try {
     const client = new Client(
-      { name: 'mcp-storybook', version: '0.1.0' },
+      { name: 'mcp-playbook', version: '0.1.0' },
       { capabilities: {} }
     )
 

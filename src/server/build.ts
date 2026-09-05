@@ -4,7 +4,7 @@
  * Builds a static documentation site from the MCP servers.
  *
  * Output:
- *   storybook-dist/
+ *   playbook-dist/
  *     index.html
  *     assets/
  *     data.json    ← all server/tool data baked in at build time
@@ -15,7 +15,7 @@
  *   - Netlify
  *   - Any static host
  *
- * Users run: mcp-storybook build
+ * Users run: mcp-playbook build
  */
 
 import fs from 'fs'
@@ -45,7 +45,7 @@ export async function buildStaticSite(options: BuildOptions) {
 
   // Write the data file — the static site reads this instead of hitting the API
   const data = {
-    title:       config.title       || 'MCP Storybook',
+    title:       config.title       || 'MCP Playbook',
     description: config.description || '',
     theme:       config.theme       || {},
     builtAt:     new Date().toISOString(),

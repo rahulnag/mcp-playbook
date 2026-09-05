@@ -16,27 +16,27 @@ export async function run() {
   const program = new Command()
 
   program
-    .name('mcp-storybook')
-    .description('Storybook for MCP tools — interactive docs and playground')
+    .name('mcp-playbook')
+    .description('Playbook for MCP tools — interactive docs and playground')
     .version(pkg.version)
 
   // ── init ─────────────────────────────────────────────────────────
 
   program
     .command('init')
-    .description('Create a storybook.config.ts in the current directory')
+    .description('Create a playbook.config.ts in the current directory')
     .action(() => {
-      const configPath = path.resolve(process.cwd(), 'storybook.config.ts')
+      const configPath = path.resolve(process.cwd(), 'playbook.config.ts')
 
       if (fs.existsSync(configPath)) {
-        console.log(chalk.yellow('\n  storybook.config.ts already exists\n'))
+        console.log(chalk.yellow('\n  playbook.config.ts already exists\n'))
         return
       }
 
-      const template = `import { defineConfig } from 'mcp-storybook'
+      const template = `import { defineConfig } from 'mcp-playbook'
 
 export default defineConfig({
-  title: 'My MCP Storybook',
+  title: 'My MCP Playbook',
   description: 'Interactive docs for our MCP tools',
 
   servers: [
@@ -79,10 +79,10 @@ export default defineConfig({
 `
       fs.writeFileSync(configPath, template, 'utf8')
 
-      console.log(chalk.green('\n  ✓ Created storybook.config.ts'))
+      console.log(chalk.green('\n  ✓ Created playbook.config.ts'))
       console.log(chalk.dim('\n  Next steps:'))
-      console.log(chalk.dim('  1. Edit storybook.config.ts — point servers at your MCP server'))
-      console.log(chalk.dim('  2. Run: npx mcp-storybook dev'))
+      console.log(chalk.dim('  1. Edit playbook.config.ts — point servers at your MCP server'))
+      console.log(chalk.dim('  2. Run: npx mcp-playbook dev'))
       console.log(chalk.dim('  3. Open: http://localhost:4242\n'))
     })
 
@@ -92,18 +92,18 @@ export default defineConfig({
     .command('dev')
     .description('Start dev server with hot reload')
     .option('-p, --port <port>', 'Port to run on', '4242')
-    .option('-c, --config <path>', 'Path to config file', 'storybook.config.ts')
+    .option('-c, --config <path>', 'Path to config file', 'playbook.config.ts')
     .option('--no-open', 'Do not open browser automatically')
     .action(async (options) => {
       console.log('')
-      console.log(chalk.bold('  ⚡ MCP Storybook'))
+      console.log(chalk.bold('  ⚡ MCP Playbook'))
       console.log(chalk.dim(`  v${pkg.version}\n`))
 
       const configPath = path.resolve(process.cwd(), options.config)
 
       if (!fs.existsSync(configPath)) {
         console.log(chalk.yellow(`  Config not found: ${options.config}`))
-        console.log(chalk.dim('  Run: npx mcp-storybook init\n'))
+        console.log(chalk.dim('  Run: npx mcp-playbook init\n'))
         process.exit(1)
       }
 
@@ -126,16 +126,16 @@ export default defineConfig({
   program
     .command('build')
     .description('Build a static documentation site')
-    .option('-o, --output <dir>', 'Output directory', 'storybook-dist')
-    .option('-c, --config <path>', 'Path to config file', 'storybook.config.ts')
+    .option('-o, --output <dir>', 'Output directory', 'playbook-dist')
+    .option('-c, --config <path>', 'Path to config file', 'playbook.config.ts')
     .action(async (options) => {
-      console.log(chalk.bold('\n  ⚡ MCP Storybook — Building static site\n'))
+      console.log(chalk.bold('\n  ⚡ MCP Playbook — Building static site\n'))
 
       const configPath = path.resolve(process.cwd(), options.config)
 
       if (!fs.existsSync(configPath)) {
         console.log(chalk.yellow(`  Config not found: ${options.config}`))
-        console.log(chalk.dim('  Run: npx mcp-storybook init\n'))
+        console.log(chalk.dim('  Run: npx mcp-playbook init\n'))
         process.exit(1)
       }
 

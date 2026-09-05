@@ -2,10 +2,10 @@
  * example/mock-server.mjs
  *
  * A minimal MCP server used by the example config.
- * Shows exactly what mcp-storybook auto-discovers.
+ * Shows exactly what mcp-playbook auto-discovers.
  *
  * Run directly: node example/mock-server.mjs
- * Or via mcp-storybook: mcp-storybook dev --config example/storybook.config.ts
+ * Or via mcp-playbook: mcp-playbook dev --config example/playbook.config.ts
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'

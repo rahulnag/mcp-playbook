@@ -10,7 +10,7 @@ const fs   = require('fs')
 const distCli = path.join(__dirname, '../dist/cli/index.js')
 
 if (!fs.existsSync(distCli)) {
-  console.error('\n  mcp-storybook: dist/ not found.')
+  console.error('\n  mcp-playbook: dist/ not found.')
   console.error('  The package was not built before publishing.')
   console.error('  If you are developing locally, run: npm run build\n')
   process.exit(1)
@@ -18,6 +18,6 @@ if (!fs.existsSync(distCli)) {
 
 // Use require for CJS build output from tsup
 require(distCli).run().catch(err => {
-  console.error('Failed to start mcp-storybook:', err.message)
+  console.error('Failed to start mcp-playbook:', err.message)
   process.exit(1)
 })

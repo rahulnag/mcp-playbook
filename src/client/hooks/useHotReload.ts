@@ -21,7 +21,7 @@ export function useHotReload(onReload: () => void) {
         try {
           const msg = JSON.parse(event.data)
           if (msg.type === 'reload') {
-            console.log('[mcp-storybook] Config changed — refreshing...')
+            console.log('[mcp-playbook] Config changed — refreshing...')
             onReload()
           }
         } catch {}

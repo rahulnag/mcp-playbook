@@ -1,14 +1,14 @@
 /**
- * example/storybook.config.ts
+ * example/playbook.config.ts
  *
  * This is a real example config you can copy into your project.
- * Run: npx mcp-storybook dev --config example/storybook.config.ts
+ * Run: npx mcp-playbook dev --config example/playbook.config.ts
  */
 
-import { defineConfig } from 'mcp-storybook'
+import { defineConfig } from 'mcp-playbook'
 
 export default defineConfig({
-  title:       'Acme Corp API Storybook',
+  title:       'Acme Corp API Playbook',
   description: 'Interactive docs and playground for all our internal MCP tools',
 
   servers: [
