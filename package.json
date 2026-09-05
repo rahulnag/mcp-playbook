@@ -1,6 +1,6 @@
 {
   "name": "mcp-playbook",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Playbook for MCP tools — auto-generates interactive docs and a live playground for your MCP servers",
   "keywords": ["mcp", "model-context-protocol", "developer-tools", "documentation", "playground", "playbook", "storybook", "documentation","ai-tools",
     "cli"],

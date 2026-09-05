@@ -1,6 +1,6 @@
 <div align="left">
 
-<div align="center"> <img src="./assets/logo.png" alt="MCP Playybook" width="80%" height="80%"/>
+<div align="center"> <img src="./assets/logo.png" alt="MCP Playbook" width="80%" height="80%"/>
 
 # MCP Playbook
 
