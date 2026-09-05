@@ -1,0 +1,14 @@
+# Source — not needed by users, only by library developers
+src/
+example/
+
+# Build tooling — not needed at runtime
+tsup.config.ts
+vite.client.config.ts
+tsconfig.json
+
+# Dev artifacts
+coverage/
+*.tgz
+.env*
+.github/
