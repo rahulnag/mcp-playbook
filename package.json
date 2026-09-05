@@ -2,9 +2,22 @@
   "name": "mcp-playbook",
   "version": "0.1.0",
   "description": "Playbook for MCP tools — auto-generates interactive docs and a live playground for your MCP servers",
-  "keywords": ["mcp", "model-context-protocol", "developer-tools", "documentation", "playground", "playbook", "playbook"],
+  "keywords": ["mcp", "model-context-protocol", "developer-tools", "documentation", "playground", "playbook", "storybook", "documentation","ai-tools",
+    "cli"],
   "license": "MIT",
-
+  "author": {
+    "name": "Rahul Nag",
+    "email": "mr.rahulnag67@gmail.com",
+    "url": "https://www.rahulnag.in"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rahulnag/mcp-playbook"
+  },
+  "homepage": "https://github.com/rahulnag/mcp-playbook#readme",
+  "bugs": {
+    "url": "https://github.com/rahulnag/mcp-playbook/issues"
+  },
   "bin": {
     "mcp-playbook": "./bin/mcp-playbook.js"
   },
