@@ -1,6 +1,6 @@
 <div align="left">
 
-<div align="center"> <img src="https://github.com/user-attachments/assets/7b8901ca-527e-496c-8fbd-0980b2491796" alt="MCP Playbook" width="80%" height="80%"/>
+<div align="center"> <img src="https://ibb.co/WW32scMx" alt="MCP Playbook" width="80%" height="80%"/>
 
 # MCP Playbook
 
@@ -15,7 +15,7 @@
 
 ---
 
-<img src="https://github.com/user-attachments/assets/7b8901ca-527e-496c-8fbd-0980b2491796" alt="MCP Playbook UI" width="50%" height="50%"/>
+<img src="https://ibb.co/WW32scMx" alt="MCP Playbook UI" width="50%" height="50%"/>
 
 </div>
 

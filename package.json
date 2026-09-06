@@ -1,6 +1,6 @@
 {
   "name": "mcp-playbook",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Playbook for MCP tools — auto-generates interactive docs and a live playground for your MCP servers",
   "keywords": [
     "mcp",
@@ -36,16 +36,15 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs"
     }
   },
   "files": [
     "dist",
     "bin",
-    "README.md",
-    "assets"
+    "README.md"
   ],
   "scripts": {
     "postinstall": "node ./bin/postinstall.js",
