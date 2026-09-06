@@ -872,7 +872,7 @@ The config is watched automatically. If it is not updating, click the **↻ Refr
 | Schema diff and changelog when tool definitions change | 🗓 Planned |
 | **Authentication — OAuth 2.0 in the UI** | 🗓 Planned |
 | Per-user auth for shared deployments | 🗓 Planned |
-| Embeddable React component `<MCPStorybook />` | 🗓 Planned |
+| Embeddable React component `<MCPPlaybook />` | 🗓 Planned |
 | VS Code extension integration | 🔭 Exploring |
 | Hosted team sharing via URL (cloud version) | 🔭 Exploring |
 | Mock mode — run without a real server | 🔭 Exploring |
