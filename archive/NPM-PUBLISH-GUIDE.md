@@ -27,7 +27,9 @@ git pull origin main
 # 2. Check what will be uploaded: dist/, bin/, README.md, LICENSE, package.json only
 npm pack --dry-run
 
-# 3. Bump the version (updates package.json, commits, creates a git tag)
+# 3. Bump the version: REQUIRED before every publish (npm rejects a version that's already published)
+#    Updates package.json + package-lock.json, commits, and creates a git tag.
+#    Don't edit the version in package.json by hand; this command does it.
 npm version patch    # bug fix / docs     0.1.9 → 0.1.10
 npm version minor    # new feature        0.1.9 → 0.2.0
 npm version major    # breaking change    0.1.9 → 1.0.0
