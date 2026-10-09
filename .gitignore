@@ -6,11 +6,12 @@ node_modules/
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
-HOW-TO-RUN.md
-CREATOR-GUIDE.md
-CONTRIBUTING.md
-DEPLOYMENT-GITHUB-PAGES.md
-NPM-PUBLISH-GUIDE.md
+
+# ── Old local-only guides (superseded by CONTRIBUTING.md + RELEASING.md) ──
+# HOW-TO-RUN.md
+# CREATOR-GUIDE.md
+# DEPLOYMENT-GITHUB-PAGES.md
+# NPM-PUBLISH-GUIDE.md
 
 # ── Build output ───────────────────────────────────────────────────
 # dist/ is built by tsup + Vite before publishing

@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
 
   root:      path.resolve(__dirname),   // index.html at project root
+  base:      './',                      // relative asset URLs so static builds work under any sub-path
   publicDir: 'public',
 
   build: {

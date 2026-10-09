@@ -35,46 +35,50 @@ export async function run() {
 
       const template = `import { defineConfig } from 'mcp-playbook'
 
-export default defineConfig({
-  title: 'My MCP Playbook',
-  description: 'Interactive docs for our MCP tools',
+// Docs for every field: https://github.com/rahulnag/mcp-playbook#configuration
 
+export default defineConfig({
+  title:       'My MCP Playbook',                     // optional: shown in the top bar
+  description: 'Interactive docs for our MCP tools',  // optional: shown on the start screen
+
+  // Required: the MCP servers to document
   servers: [
     {
-      name:      'My API',
-      transport: 'stdio',
-      command:   'node',
-      args:      ['./my-mcp-server.js'],
+      name:      'My API',     // any label
+      transport: 'stdio',      // MCP Playbook starts the server for you
+      command:   'node',       // the command you'd type to start your server...
+      args:      ['./my-mcp-server.js'],  // ...and its arguments
+
+      // Optional: variables your server reads from process.env
+      // env: { API_KEY: process.env.API_KEY! },
+
+      // Optional: folder to start the server in
+      // cwd: './packages/api',
     },
 
-    // HTTP transport example:
+    // A server that is already running at a URL:
     // {
     //   name:      'Remote API',
     //   transport: 'http',
     //   url:       'http://localhost:3001/mcp',
+    //   headers:   { Authorization: 'Bearer ' + process.env.API_TOKEN },
     // },
   ],
 
-  // Optional: hand-written examples per tool
+  // Optional: ready-made inputs shown in each tool's Examples tab
   examples: {
     // get_user: [
-    //   {
-    //     label: 'Basic lookup',
-    //     input: { userId: 'usr_abc123' }
-    //   }
-    // ]
+    //   { label: 'Basic lookup', input: { userId: 'usr_abc123' } },
+    // ],
   },
 
-  // Optional: group tools into sidebar sections
+  // Optional: labels shown on tools and matched by search
   tags: {
     // 'User management': ['get_user', 'create_user'],
   },
 
-  theme: {
-    primary: '#7F77DD'
-  },
-
-  port: 4242
+  // Optional: port for \`mcp-playbook dev\` (default 4242)
+  // port: 4242,
 })
 `
       fs.writeFileSync(configPath, template, 'utf8')
@@ -91,7 +95,7 @@ export default defineConfig({
   program
     .command('dev')
     .description('Start dev server with hot reload')
-    .option('-p, --port <port>', 'Port to run on', '4242')
+    .option('-p, --port <port>', 'Port to run on (default: config.port or 4242)')
     .option('-c, --config <path>', 'Path to config file', 'playbook.config.ts')
     .option('--no-open', 'Do not open browser automatically')
     .action(async (options) => {
@@ -111,7 +115,7 @@ export default defineConfig({
         // Lazy import so init command works even if deps not installed
         const { startDevServer } = require('../server/dev-server.js')
         await startDevServer({
-          port:       parseInt(options.port),
+          port:       options.port ? parseInt(options.port) : undefined,
           configPath,
           open:       options.open !== false
         })

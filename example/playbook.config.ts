@@ -51,14 +51,10 @@ export default defineConfig({
     ]
   },
 
-  // Group tools into sections in the sidebar
+  // Labels shown on each tool's page and matched by search
   tags: {
     'User management': ['get_user', 'create_user', 'list_users'],
     'Admin':           ['purge_cache', 'get_metrics']
-  },
-
-  theme: {
-    primary: '#7F77DD'
   },
 
   port: 4242

@@ -1,690 +1,406 @@
-<div align="left">
+<div align="center">
 
-<div align="center"> <img src="https://i.ibb.co/RpSD7Csv/logo.png" alt="MCP Playbook" width="80%" height="80%"/>
+<img src="https://i.ibb.co/RpSD7Csv/logo.png" alt="MCP Playbook" width="80%"/>
 
 # MCP Playbook
 
-**Playbook for MCP tools** — auto-generates interactive documentation and a live playground for your MCP servers.
+**Interactive docs and a live playground for your MCP servers. Generated automatically.**
 
 [![npm version](https://img.shields.io/npm/v/mcp-playbook?color=7c74d8&labelColor=1a1a1a)](https://www.npmjs.com/package/mcp-playbook)
 [![license](https://img.shields.io/npm/l/mcp-playbook?color=5dcaa5&labelColor=1a1a1a)](LICENSE)
 [![node](https://img.shields.io/node/v/mcp-playbook?color=5dcaa5&labelColor=1a1a1a)](https://nodejs.org)
-[![MCP spec](https://img.shields.io/badge/MCP%20spec-2026--07--28-7c74d8?labelColor=1a1a1a)](https://spec.modelcontextprotocol.io)
 
-[Quick Start](#-quick-start) · [Configuration](#-configuration) · [CLI](#-cli-reference) · [Who is this for](#-who-is-this-for) · [Comparison](#-how-it-compares) · [Server structure](#-mcp-server-file-structure--what-you-need-to-know) · [Roadmap](#-roadmap)
-
----
-
-<img src="https://i.ibb.co/RpSD7Csv/logo.png" alt="MCP Playbook UI" width="50%" height="50%"/>
+[Quick start](#quick-start) · [Configuration](#configuration) · [Recipes](#server-recipes) · [Commands](#commands) · [Deploying](#deploying-the-docs) · [Troubleshooting](#troubleshooting)
 
 </div>
 
 ---
 
-## ⚡ What is MCP Playbook?
+## What is it?
 
-If you have built MCP tools, you know the problem:
+You've built an MCP server. Now your teammates need to know **which tools exist, what parameters they take, and how to try them**.
 
-- Teammates **do not know what tools exist**
-- There is **no documentation** of parameters or return types
-- **Testing a tool** requires writing code or using raw JSON in the Inspector
-- **New developers** spend hours figuring out what the server can do
-- Tool documentation **goes stale** the moment anyone updates the server
+MCP Playbook connects to your server, reads every tool's schema, and gives you a web UI with:
 
-**MCP Playbook** solves all of this — the same way Playbook solved it for React components.
+- **Docs** for every tool and parameter (types, required/optional, defaults, descriptions)
+- **A "Try it" form** to run any tool against your real server from the browser
+- **Saved examples** your team can load with one click
+- **A static site build** you can deploy and share as a URL
 
-It connects to your MCP server, **auto-discovers every tool** from its JSON Schema, and renders a beautiful interactive documentation site with a live playground. Zero manual documentation. Always up to date.
-
-```bash
-npx mcp-playbook init    # create config — 30 seconds
-npx mcp-playbook dev     # open http://localhost:4242
-```
-
----
-
-## 🎯 Problem statement
-
-MCP (Model Context Protocol) is becoming the standard for exposing AI tools. Teams are building MCP servers with 10, 50, even 200+ tools. But there is no standard way to:
-
-| Problem | Without MCP Playbook | With MCP Playbook |
-|---|---|---|
-| Discover available tools | Read source code or raw JSON | Browse a searchable UI |
-| Understand a tool's parameters | Read the schema manually | Auto-generated docs with type badges |
-| Test a tool | Write code or use raw Inspector | Click Run in the browser |
-| Share docs with teammates | Write and maintain markdown manually | Deploy a static site from one command |
-| Onboard a new developer | Days of reading code | Open a URL |
-| Keep docs up to date | Manual — always goes stale | Automatic — re-reads server on every run |
-
----
-
-## 👥 Who is this for?
-
-### ✅ Primary audience — MCP server developers
-
-If you are **building an MCP server** in any language, this library documents and tests it automatically.
-
-```
-You build: Node.js MCP server with 50 tools
-You run:   npx mcp-playbook dev
-You get:   Complete interactive docs for all 50 tools instantly
-```
-
-**Best fit:**
-- Backend developers building MCP servers in Node.js, Python, Go, Rust
-- Fullstack teams using Next.js with MCP API routes
-- Teams building AI agents that expose MCP tools
-- Open source MCP server maintainers who need public documentation
-
-### ✅ Secondary audience — MCP tool consumers
-
-If you are **consuming MCP tools** built by another team, MCP Playbook is your reference guide — the same way Swagger UI documents REST APIs you consume.
-
-```
-Your team: building AI agents that call backend MCP tools
-You need:  know what tools exist, what parameters they take
-You get:   deployed URL your whole team bookmarks
-```
-
-### ✅ Tertiary audience — non-developer stakeholders
-
-Product managers, QA engineers, technical writers, and external API partners who need to understand what MCP tools are available — without running any code locally.
-
-```
-PM needs:  understand what the AI agent can do
-They open: https://mcp-docs.yourcompany.com
-They see:  every tool, every parameter, live testing UI
-```
-
----
-
-## ❌ Who is this NOT for?
-
-| Situation | Why MCP Playbook does not fit |
-|---|---|
-| Pure React frontend with no MCP server | No MCP tools to document |
-| REST-only API (no MCP) | Use Swagger / OpenAPI instead |
-| Mobile app with no MCP server | No MCP tools involved |
-| You need to debug MCP protocol messages | Use `@modelcontextprotocol/inspector` instead |
-
----
-
-## 🌐 Language support
-
-MCP Playbook connects over the **MCP protocol** — it does not care what language your server is written in. As long as your server speaks valid MCP, it works.
-
-| Server language | Transport | Works? | Notes |
-|---|---|---|---|
-| **Node.js / TypeScript** | stdio, HTTP, SSE | ✅ | Best support, native |
-| **Python** | stdio, HTTP, SSE | ✅ | FastMCP, official Python SDK |
-| **Go** | HTTP, SSE | ✅ | Any Go MCP library |
-| **Rust** | HTTP, SSE | ✅ | Any Rust MCP library |
-| **Any language** | HTTP, SSE | ✅ | If it speaks MCP protocol |
-
-> **Key insight:** MCP Playbook calls `tools/list` — a core MCP protocol method that every compliant server must implement. The server's internal language and framework are completely invisible to the library.
-
----
-
-## 🔄 How it compares
-
-### MCP Playbook vs MCP Inspector
-
-The most common question. These are **complementary tools**, not competitors.
-
-| Feature | `@modelcontextprotocol/inspector` | `mcp-playbook` |
-|---|---|---|
-| **Purpose** | Debug and validate protocol | Document and share with team |
-| **Audience** | Server author (you) | Whole team + external devs |
-| **Hosting** | Localhost only — not shareable | Deploy to any server or URL |
-| **Persistent examples** | ❌ Fresh every session | ✅ Defined in config, committed to git |
-| **Multi-server view** | ❌ One server at a time | ✅ All servers in one dashboard |
-| **Static deployable docs** | ❌ Needs live Node process | ✅ `mcp-playbook build` → static site |
-| **Raw JSON-RPC logs** | ✅ Full protocol inspection | ❌ Not the goal |
-| **OAuth debugging** | ✅ Built-in | 🗓 Planned |
-| **Team sharing via URL** | ❌ Per-launch token, localhost only | ✅ Deploy and share |
-| **CLI / TUI mode** | ✅ | ❌ |
-| **Config committed to git** | ❌ | ✅ |
-
-**Use the Inspector when:** you are building a server and need to debug protocol messages, test OAuth flows, or inspect raw JSON-RPC communication.
-
-**Use MCP Playbook when:** you want permanent team documentation, a shareable URL, onboarding for new developers, or a deployable static docs site.
-
-### MCP Playbook vs Swagger UI
-
-| Feature | Swagger UI | MCP Playbook |
-|---|---|---|
-| Protocol | REST / OpenAPI | MCP (Model Context Protocol) |
-| Auto-discovery | Reads OpenAPI spec file | Connects to live MCP server |
-| Live execution | ✅ | ✅ |
-| Static build | ✅ | ✅ |
-| Language agnostic | ✅ | ✅ |
-| For AI tools | ❌ | ✅ |
-
----
-
-## 🚀 Quick start
-
-### Requirements
-
-- **Node.js 18.0.0 or higher**
-- An existing MCP server (stdio, HTTP, or SSE transport)
-- npm, pnpm, or yarn
-
-### Step 1 — Install
+You don't write any docs by hand, and they stay current: every run reads the latest tools from your server. Think **Storybook or Swagger UI, but for MCP tools**.
 
 ```bash
-# npm
-npm install --save-dev mcp-playbook
-
-# pnpm
-pnpm add -D mcp-playbook
-
-# yarn
-yarn add -D mcp-playbook
-
-# or run without installing
-npx mcp-playbook init
+npm install -D mcp-playbook   # 1. install in your project
+npx mcp-playbook init         # 2. create playbook.config.ts
+npx mcp-playbook dev          # 3. open http://localhost:4242
 ```
 
-### Step 2 — Create config
+---
+
+## Quick start
+
+**You need:** Node.js 18+ and an MCP server, written in any language.
+
+### 1. Install
+
+```bash
+npm install -D mcp-playbook     # or: pnpm add -D mcp-playbook  /  yarn add -D mcp-playbook
+```
+
+> Install it **in your project**. Your config file imports from `mcp-playbook`, so it has to be in your project's `node_modules`.
+
+### 2. Create the config file
 
 ```bash
 npx mcp-playbook init
 ```
 
-This creates `playbook.config.ts` in your current directory.
+This creates `playbook.config.ts` in the current folder. It never overwrites an existing file.
 
-### Step 3 — Point it at your server
+### 3. Tell it how to start your server
+
+Open `playbook.config.ts` and change `command` and `args` to whatever you normally type to start your server. For example, if you run `node ./server.js`:
 
 ```typescript
-// playbook.config.ts
 import { defineConfig } from 'mcp-playbook'
 
 export default defineConfig({
-  title: 'My API Playbook',
   servers: [
     {
-      name:      'My MCP Server',
-      transport: 'stdio',
-      command:   'node',
-      args:      ['./server.js'],
-    }
-  ]
+      name:      'My Server',       // any label you like
+      transport: 'stdio',           // MCP Playbook starts the server for you
+      command:   'node',            // the program...
+      args:      ['./server.js'],   // ...and its arguments
+    },
+  ],
 })
 ```
 
-### Step 4 — Start
+Not using Node? See [Server recipes](#server-recipes) for Python, TypeScript, Go/Rust, npm packages and HTTP servers.
+
+### 4. Start it
 
 ```bash
 npx mcp-playbook dev
 ```
 
-Browser opens at **http://localhost:4242** showing all your tools with auto-generated documentation and a live playground.
+Your browser opens at **http://localhost:4242** with all your tools listed. Edit and save the config while it runs, and the page updates on its own.
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
-All configuration lives in `playbook.config.ts` at your project root. Use `defineConfig()` for TypeScript autocomplete.
+Everything lives in **`playbook.config.ts`** in your project root. `defineConfig()` gives you autocomplete and type checking in your editor.
 
-### Full reference
+Only **`servers`** is required. Every other field is optional.
+
+### Step 1: Pick a transport
+
+The `transport` field tells MCP Playbook **how to reach your server**. Pick the row that matches your setup:
+
+| Your server… | Use `transport:` | Then fill in |
+|---|---|---|
+| Runs locally as a command (e.g. `node server.js`, `python server.py`). This is the most common case. | `'stdio'` | `command`, `args` (and `env`, `cwd` if needed) |
+| Is already running and reachable at a URL like `http://…/mcp` | `'http'` | `url` (and `headers` if it needs auth) |
+| Is already running and uses the older SSE transport, at a URL like `http://…/sse` | `'sse'` | `url` (and `headers` if it needs auth) |
+
+**Not sure which one?** Look at your server code:
+
+| In your server code you see… | Transport |
+|---|---|
+| `StdioServerTransport` (TypeScript), or `mcp.run()` / `mcp.run(transport="stdio")` (Python) | `stdio` |
+| `StreamableHTTPServerTransport` (TypeScript), or `mcp.run(transport="streamable-http")` (Python) | `http` |
+| `SSEServerTransport` (TypeScript), or `mcp.run(transport="sse")` (Python) | `sse` |
+
+### Step 2: Fill in the server fields
+
+Each entry in `servers` describes one MCP server. Here's every field, what it means, and when you need it.
+
+| Field | Needed for | Required? | What to put |
+|---|---|---|---|
+| `name` | all | **Yes** | Any label. It's shown in the UI. |
+| `transport` | all | **Yes** | `'stdio'`, `'http'` or `'sse'` (see Step 1). |
+| `command` | stdio | **Yes** | The program that starts your server: `'node'`, `'python'`, `'uv'`, `'npx'`, `'./my-binary'`… |
+| `args` | stdio | No | A list of arguments for `command`, usually the path to your server file. |
+| `cwd` | stdio | No | The folder to start the server in. |
+| `env` | stdio | No | Environment variables your server needs (API keys, database URLs…). |
+| `url` | http, sse | **Yes** | The server's address, e.g. `'http://localhost:3001/mcp'`. |
+| `headers` | http, sse | No | HTTP headers sent with every request, usually for auth. |
+
+If a field doesn't apply to your transport, it's ignored (for example, `url` on a `stdio` server).
+
+#### `command` and `args`: how to start your server
+
+Take the command you'd type in a terminal and split it. The **first word** goes in `command` and **everything after it** goes in `args`, one item per word:
+
+```
+node ./dist/server.js --verbose
+└┬─┘ └──────────┬──────────────┘
+command        args: ['./dist/server.js', '--verbose']
+```
+
+MCP Playbook runs that command and talks to the server through its input and output. You don't need to start the server yourself. Relative paths in `args` resolve from `cwd`, which by default is the folder you run `mcp-playbook` from.
+
+#### `cwd`: where to run it (optional)
+
+Use `cwd` when your server has to be started **from its own folder**, for example because it reads files with relative paths like `./data.json`, or lives in a monorepo package.
+
+```typescript
+cwd:  './packages/api',     // run the server from this folder
+args: ['./dist/server.js'], // → resolves to ./packages/api/dist/server.js
+```
+
+#### `env`: secrets and settings for your server (optional)
+
+Use `env` when your server reads **environment variables**, for example `process.env.API_KEY` in Node or `os.environ["API_KEY"]` in Python.
+
+```typescript
+env: {
+  API_KEY: process.env.API_KEY!,   // pass API_KEY from your terminal to the server
+  DB_URL:  process.env.DB_URL!,    // pass DB_URL from your terminal to the server
+  LOG_LEVEL: 'debug',              // or hard-code a non-secret value
+},
+```
+
+What this means:
+
+- **The names on the left** (`API_KEY`, `DB_URL`) are only examples. Use **whatever names your server reads**. If your server reads `process.env.GITHUB_TOKEN`, write `GITHUB_TOKEN: process.env.GITHUB_TOKEN!`.
+- **`process.env.X`** reads the value from **the terminal where you run `mcp-playbook`**, so your secrets stay out of the config file and out of git.
+- **The `!`** is TypeScript for "I know this exists". It only silences an editor warning. If the variable isn't set, your server simply won't receive it.
+
+> ⚠️ **Your server doesn't automatically see your terminal's variables.** For safety, a `stdio` server only gets a small basic set (like `PATH` and `HOME`) plus what you list in `env`. If your server works with `node server.js` but fails inside MCP Playbook, a missing `env` entry is the usual cause.
+
+Set the values in your terminal before starting:
+
+```bash
+export API_KEY=sk-123
+export DB_URL=postgres://localhost/mydb
+npx mcp-playbook dev
+```
+
+**Prefer a `.env` file?** Add one line at the top of your config (needs Node 20.12+):
+
+```typescript
+import { defineConfig } from 'mcp-playbook'
+process.loadEnvFile()   // reads .env from the folder you run mcp-playbook in
+```
+
+On older Node versions, install `dotenv` and add `import 'dotenv/config'` instead.
+
+#### `url`: where the running server is (http / sse)
+
+The full address of your server's MCP endpoint, including the path. By convention that's usually **`/mcp`** for `http` and **`/sse`** for `sse`:
+
+```typescript
+url: 'http://localhost:3001/mcp'
+```
+
+The server must **already be running**. MCP Playbook connects to it but won't start it.
+
+#### `headers`: authentication for http / sse servers (optional)
+
+Headers sent with every request. Use them when your server needs a token or API key:
+
+```typescript
+headers: {
+  Authorization: `Bearer ${process.env.API_TOKEN}`,
+  'X-API-Key':   process.env.MY_API_KEY!,
+},
+```
+
+The same rule as `env` applies: read secrets from `process.env` instead of typing them into the file.
+
+> **Quick rule:** `env` is for **stdio** servers (passed to the process MCP Playbook starts). `headers` is for **http / sse** servers (sent over the network).
+
+### Step 3: Optional extras
+
+| Field | What it does | Default |
+|---|---|---|
+| `title` | Name shown in the top bar | `'MCP Playbook'` |
+| `description` | Short text shown on the start screen | none |
+| `examples` | Ready-made inputs for your tools ([see below](#examples)) | none |
+| `tags` | Labels for your tools ([see below](#tags)) | none |
+| `port` | Port for `mcp-playbook dev`. The `--port` flag overrides it. If it's busy, the next free port is used. | `4242` |
+| `theme` | Reserved for future theming. **Not applied by the UI yet.** | none |
+
+#### Examples
+
+Saved inputs that appear in a tool's **Examples** tab. Click **Load →** to copy them into the Try it form. The key is the **tool name exactly as your server defines it**:
+
+```typescript
+examples: {
+  get_user: [
+    {
+      label:          'Fetch admin user',               // required: card title
+      input:          { userId: 'usr_admin_001' },      // required: the arguments to fill in
+      description:    'Look up the main admin account', // optional
+      expectedOutput: { id: 'usr_admin_001', role: 'admin' }, // optional: shown for reference only
+    },
+  ],
+},
+```
+
+Add examples only where they help. Every tool still gets docs and a Try it form without them.
+
+#### Tags
+
+Labels for your tools. Each tag shows as a badge on the tool's page, and the sidebar search matches tags too. A tool can have more than one tag.
+
+```typescript
+tags: {
+  'User management': ['get_user', 'create_user'],
+  'Admin':           ['purge_cache'],
+},
+```
+
+### Full example
 
 ```typescript
 import { defineConfig } from 'mcp-playbook'
 
 export default defineConfig({
-
-  // ── Required ──────────────────────────────────────────────────────
+  title:       'Acme Corp API Playbook',      // optional
+  description: 'Docs for our internal tools', // optional
 
   servers: [
-
-    // stdio transport — spawn a local process
+    // A local server that MCP Playbook starts for you
     {
-      name:      'Local API',             // display name in UI
+      name:      'Local API',
       transport: 'stdio',
-      command:   'node',                  // or 'python3', 'go run', etc.
-      args:      ['./dist/server.js'],    // path to your server entry file
-      env: {                              // environment variables (optional)
-        API_KEY:    process.env.API_KEY!,
-        DB_URL:     process.env.DB_URL!,
+      command:   'node',
+      args:      ['./dist/server.js'],
+      cwd:       './packages/api',              // optional
+      env: {                                    // optional
+        API_KEY: process.env.API_KEY!,
       },
-      cwd: './packages/api',              // working directory (optional)
     },
 
-    // HTTP transport — connect to already-running server
+    // A server that's already running
     {
       name:      'Remote API',
       transport: 'http',
-      url:       'http://localhost:3001/mcp',
-      headers: {                          // auth headers (optional)
-        'Authorization': `Bearer ${process.env.TOKEN}`,
-        'X-API-Key':     process.env.API_KEY!,
-      }
+      url:       'https://api.example.com/mcp',
+      headers: {                                // optional
+        Authorization: `Bearer ${process.env.API_TOKEN}`,
+      },
     },
-
-    // SSE transport — Server-Sent Events
-    {
-      name:      'Streaming Server',
-      transport: 'sse',
-      url:       'http://localhost:3002/sse'
-    },
-
   ],
 
-  // ── Optional ──────────────────────────────────────────────────────
-
-  title:       'Acme Corp API Playbook',
-  description: 'Interactive docs for all internal MCP tools',
-  port:        4242,                      // default: 4242
-
-  // Hand-written examples per tool — appear in Examples tab
-  // Load into Try tab with one click
-  // You do NOT need examples for every tool — only the important ones
-  examples: {
-    get_user: [
-      {
-        label:          'Fetch admin user',
-        description:    'Look up the main admin account',
-        input:          { userId: 'usr_admin_001', include_meta: true },
-        expectedOutput: { id: 'usr_admin_001', name: 'Alice', role: 'admin' }
-      },
-      {
-        label: 'Fetch developer',
-        input: { userId: 'usr_dev_042' }
-      }
-    ],
-    create_order: [
-      {
-        label: 'Standard order',
-        input: { userId: 'usr_123', productId: 'prod_456', quantity: 2 }
-      }
-    ]
+  examples: {                                   // optional
+    get_user: [{ label: 'Admin user', input: { userId: 'usr_admin_001' } }],
   },
 
-  // Group tools into named sections in the sidebar
-  // A tool can appear in multiple sections
-  // Tools without a tag appear under their server name
-  tags: {
-    'User management': ['get_user', 'create_user', 'list_users', 'delete_user'],
-    'Orders':          ['create_order', 'get_order', 'cancel_order'],
-    'Admin':           ['purge_cache', 'get_metrics', 'list_audit_logs'],
+  tags: {                                       // optional
+    'User management': ['get_user', 'create_user'],
   },
-
-  // UI theme customisation
-  theme: {
-    primary:    '#7C74D8',    // accent colour for buttons, badges, selected items
-    background: '#080808',   // main background colour
-    font:       'IBM Plex Mono',  // must be available in the browser
-  },
-
 })
 ```
 
 ---
 
-## 🔐 Authentication
+## Server recipes
 
-### For servers that require API keys or tokens
-
-Pass credentials via the `env` field. Your MCP server reads them from environment variables.
+Copy the one that matches your server and change the paths.
 
 ```typescript
-// playbook.config.ts
-servers: [
-  {
-    name:      'Atlassian API',
-    transport: 'stdio',
-    command:   'node',
-    args:      ['./server.js'],
-    env: {
-      ATLASSIAN_TOKEN: process.env.ATLASSIAN_TOKEN!,
-      ATLASSIAN_URL:   process.env.ATLASSIAN_URL!,
-    }
-  }
-]
+// Node.js (JavaScript)
+{ name: 'My Server', transport: 'stdio', command: 'node', args: ['./dist/server.js'] }
+
+// TypeScript, run directly with tsx (npm i -D tsx)
+{ name: 'My Server', transport: 'stdio', command: 'npx', args: ['tsx', './src/server.ts'] }
+
+// TypeScript on Node 22.18+ / 23.6+ (Node can run .ts files natively)
+{ name: 'My Server', transport: 'stdio', command: 'node', args: ['./src/server.ts'] }
+
+// Python
+{ name: 'My Server', transport: 'stdio', command: 'python', args: ['server.py'] }
+
+// Python inside a virtualenv: point at the venv's python
+{ name: 'My Server', transport: 'stdio', command: './.venv/bin/python', args: ['server.py'] }
+
+// Python with uv
+{ name: 'My Server', transport: 'stdio', command: 'uv', args: ['run', 'server.py'] }
+
+// Compiled binary (Go, Rust, …)
+{ name: 'My Server', transport: 'stdio', command: './bin/my-server' }
+
+// A published MCP server from npm
+{ name: 'Filesystem', transport: 'stdio', command: 'npx', args: ['-y', '@modelcontextprotocol/server-filesystem', './'] }
+
+// Running HTTP server
+{ name: 'My Server', transport: 'http', url: 'http://localhost:3001/mcp' }
+
+// Running HTTP server with a token
+{ name: 'My Server', transport: 'http', url: 'https://api.example.com/mcp',
+  headers: { Authorization: `Bearer ${process.env.API_TOKEN}` } }
+
+// Running SSE server (older transport)
+{ name: 'My Server', transport: 'sse', url: 'http://localhost:3002/sse' }
 ```
 
-Set your token in the shell before running:
+**Several servers?** List them all in `servers`. They show up together in one UI, and you can filter by server.
 
-```bash
-export ATLASSIAN_TOKEN=your_personal_api_token
-npx mcp-playbook dev
-```
-
-### For HTTP servers with auth headers
-
-```typescript
-{
-  transport: 'http',
-  url:       'https://api.yourcompany.com/mcp',
-  headers: {
-    'Authorization': `Bearer ${process.env.API_TOKEN}`,
-  }
-}
-```
-
-### ⚠️ Current auth limitations
-
-Full OAuth 2.0 in the UI (where each team member logs in with their own account) is **on the roadmap** but not yet implemented. For now:
-
-| Auth method | Supported today |
-|---|---|
-| API keys via env variables | ✅ |
-| Bearer tokens via headers | ✅ |
-| Personal access tokens | ✅ |
-| OAuth 2.0 in the UI | 🗓 Planned |
-| Per-user auth in shared deployments | 🗓 Planned |
-
-For internal team deployments today: use a shared service account token passed via env. For public-facing deployments that need per-user auth: wait for the OAuth feature or run the playground behind your own auth layer (SSO, Cloudflare Access, etc.).
+> MCP Playbook needs **one entry per server: its entry file or URL**. How your server is organised inside doesn't matter. It reads the tool list over the MCP protocol (`tools/list`), so you never list tools in the config.
 
 ---
 
-## 💻 CLI Reference
-
-All commands are available via `npx mcp-playbook` or the `mcp-playbook` binary if installed globally.
+## Commands
 
 ### `mcp-playbook dev`
 
-Starts the development server with hot reload. Opens browser automatically.
+Starts the local UI with live reload and opens your browser.
+
+| Option | What it does | Default |
+|---|---|---|
+| `-p, --port <port>` | Port to run on | `port` from config, else `4242` |
+| `-c, --config <path>` | Config file to use | `playbook.config.ts` |
+| `--no-open` | Don't open the browser | opens it |
 
 ```bash
-mcp-playbook dev [options]
-
-Options:
-  -p, --port <port>      Port to run on (default: 4242)
-  -c, --config <path>    Path to config file (default: playbook.config.ts)
-  --no-open              Do not open browser automatically
-```
-
-```bash
-# Examples
-mcp-playbook dev
-mcp-playbook dev --port 8080
-mcp-playbook dev --config ./docs/playbook.config.ts
-mcp-playbook dev --no-open
+npx mcp-playbook dev --port 8080
+npx mcp-playbook dev --config ./docs/playbook.config.ts
 ```
 
 ### `mcp-playbook build`
 
-Connects to all configured servers, discovers all tools, and generates a **static documentation site**. Deploy it anywhere — no server required at view time.
+Connects to your servers once, then writes a **static website** you can host anywhere.
 
-```bash
-mcp-playbook build [options]
-
-Options:
-  -o, --output <dir>     Output directory (default: playbook-dist)
-  -c, --config <path>    Path to config file (default: playbook.config.ts)
-```
-
-```bash
-# Examples
-mcp-playbook build
-mcp-playbook build --output ./docs-site
-```
-
-Deploy `playbook-dist/` to **GitHub Pages, Vercel, Netlify**, or any static host.
+| Option | What it does | Default |
+|---|---|---|
+| `-o, --output <dir>` | Output folder | `playbook-dist` |
+| `-c, --config <path>` | Config file to use | `playbook.config.ts` |
 
 ### `mcp-playbook init`
 
-Scaffolds a `playbook.config.ts` file in the current directory. Safe to run — will not overwrite an existing config.
-
-```bash
-mcp-playbook init
-```
+Creates a starter `playbook.config.ts`. It won't overwrite an existing one.
 
 ---
 
-## 🖥️ The Playbook UI
+## Using the UI
 
-### Sidebar
-
-Lists all discovered tools grouped by server. Contains:
-- **Search** — filters across tool names, descriptions, and tags
-- **Server filter** — show tools from one server at a time
-- **Connection status** — green dot = connected, red = disconnected
-- **Tag groups** — if you defined tags in config
-
-### Docs tab
-
-Auto-generated from the tool's JSON Schema. Shows:
-- Every parameter with name, **type badge** (string, number, boolean, enum, object)
-- Required vs optional label
-- Default values
-- Descriptions
-- Enum values listed as pills
-- Which server the tool belongs to
-
-### Try it tab
-
-Interactive form built from the input schema:
-- `string` → text input
-- `number` → number input
-- `boolean` → true/false toggle
-- `enum` → dropdown select
-- `object` → nested form
-
-Click **Run tool** to execute against the real MCP server. Response shown with syntax highlighting and execution time in milliseconds.
-
-### Examples tab
-
-Shows all examples you defined in `playbook.config.ts`. Click **Load →** to pre-fill the Try tab with those values. If no examples are defined, shows instructions for adding them.
-
-### Schema tab
-
-Shows the raw JSON Schema and the complete MCP tool definition — ready to copy-paste into another project.
-
-### Hot reload
-
-When running `mcp-playbook dev`, the config file is watched. Add a new server or modify examples → browser refreshes automatically without a page reload.
+- **Sidebar**: every tool from every server. Search by name, description or tag, and filter by server. A green dot means connected, red means it couldn't connect.
+- **Docs tab**: each parameter with its type, required/optional, default, description and allowed values.
+- **Try it tab**: a form built from the tool's schema. Text, numbers, true/false and dropdowns (for enums) get normal inputs. Objects and arrays take JSON. Click **Run tool** to call your real server and see the response and how long it took.
+- **Examples tab**: your saved examples. **Load →** fills in the Try it form.
+- **Schema tab**: the raw JSON Schema and tool definition, ready to copy.
 
 ---
 
-## 🏗️ How MCP Playbook works
+## Deploying the docs
 
-```
-Your playbook.config.ts
-          ↓
-mcp-playbook reads config
-          ↓
-Connects to each MCP server
-(spawns process for stdio / connects to URL for HTTP/SSE)
-          ↓
-Calls tools/list on each server
-(standard MCP protocol — works with any compliant server)
-          ↓
-Gets all tool schemas (name, description, inputSchema)
-          ↓
-Merges with your hand-written examples from config
-          ↓
-Serves React UI at localhost:4242
-          ↓
-Docs tab:     renders schema as human-readable documentation
-Try it tab:   renders interactive form, executes real tool calls
-Examples tab: shows preset inputs, loads them into Try tab
-Schema tab:   shows raw JSON for copy-paste
-```
+`mcp-playbook build` produces plain HTML/JS files. You can host them on GitHub Pages, Vercel, Netlify, S3, nginx, or anywhere else, including sub-paths like `/docs/`.
 
-### The standard it relies on
+Good to know:
 
-Every MCP server regardless of language or library must implement `tools/list` — it is a core method of the MCP specification (maintained by Anthropic, open standard). This is why MCP Playbook works with any compliant server:
+- The deployed site shows **Docs, Examples and Schema**. **Run tool is disabled**, because there's no live server behind a static site.
+- Your servers must be **reachable while `build` runs**: stdio servers get started, and http/sse servers must already be running. Any `env` / `headers` secrets must be set at that point.
+- **Secrets are never written to the output.** Values from `env` and `headers` don't appear in the built files.
 
-```
-Atlassian MCP server → implements tools/list ✓
-Linear MCP server    → implements tools/list ✓
-Your custom server   → implements tools/list ✓
-Any future server    → implements tools/list ✓
-```
-
----
-
-## 📂 MCP server file structure — what you need to know
-
-### One entry point, unlimited internal files
-
-An MCP server always has **one entry point file** — the file MCP clients connect to. But internally it can import from as many files as you want.
-
-```
-From outside (mcp-playbook, Claude, any MCP client):
-  sees → one process running server.js
-  does not know → how many internal files exist
-
-From inside (your code):
-  server.js imports tools/index.ts
-  tools/index.ts imports users/get_user.ts
-  tools/index.ts imports issues/create_issue.ts
-  ... 100 files imported — all invisible to the outside
-```
-
-In your `playbook.config.ts` you always point at the **entry file only**:
-
-```typescript
-servers: [
-  {
-    name:      'My API',
-    transport: 'stdio',
-    command:   'node',
-    args:      ['./server.js'],    // ← always the entry point
-    // internal file structure does not matter here
-  }
-]
-```
-
-### Multiple MCP servers — each its own entry file
-
-You can run multiple completely separate MCP servers — each its own process, its own entry file, its own set of tools. MCP Playbook connects to all of them and shows everything in one unified dashboard.
-
-```
-Real world example — Atlassian:
-
-  jira-mcp/server.js          → Jira tools only
-  confluence-mcp/server.js    → Confluence tools only
-  bitbucket-mcp/server.js     → Bitbucket tools only
-```
-
-```typescript
-// playbook.config.ts — connect to all three at once
-export default defineConfig({
-  servers: [
-    {
-      name:      'Jira',
-      transport: 'stdio',
-      command:   'node',
-      args:      ['./jira-mcp/server.js'],
-    },
-    {
-      name:      'Confluence',
-      transport: 'stdio',
-      command:   'node',
-      args:      ['./confluence-mcp/server.js'],
-    },
-    {
-      name:      'Bitbucket',
-      transport: 'stdio',
-      command:   'node',
-      args:      ['./bitbucket-mcp/server.js'],
-    },
-  ]
-})
-```
-
-MCP Playbook spawns all three as separate processes and shows all their tools in one searchable UI — grouped by server, filterable, searchable.
-
-> **Key rule:** one entry point per MCP server. How many files live inside that server is entirely your choice and completely invisible to MCP Playbook.
-
----
-
-## 📂 Structuring a large MCP server (100+ tools)
-
-For servers with many tools, use the **one file per tool + auto-loader** pattern. You never register tools manually in `playbook.config.ts` — MCP Playbook discovers them all automatically from the server.
-
-```
-src/
-  tools/
-    users/
-      get_user.ts
-      create_user.ts
-      list_users.ts
-    issues/
-      create_issue.ts
-      search_issues.ts
-    index.ts        ← auto-loads all tool files
-  server.ts         ← stays tiny forever
-```
-
-```typescript
-// src/tools/users/get_user.ts — one file, one tool
-import { z } from 'zod/v4'
-
-export const name = 'get_user'
-
-export const config = {
-  title:       'Get User',
-  description: 'Retrieve a user by their unique ID',
-  inputSchema: z.object({
-    userId:       z.string().describe('The user UUID'),
-    include_meta: z.boolean().default(false).describe('Include metadata'),
-  })
-}
-
-export const handler = async ({ userId, include_meta }) => {
-  const user = await db.users.findById(userId)
-  return { content: [{ type: 'text', text: JSON.stringify(user) }] }
-}
-```
-
-```typescript
-// src/tools/index.ts — auto-loads every tool file
-import { readdirSync, statSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath, pathToFileURL } from 'url'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-export async function registerAllTools(server) {
-  function getToolFiles(dir) {
-    const files = []
-    for (const entry of readdirSync(dir)) {
-      const full = join(dir, entry)
-      if (statSync(full).isDirectory()) {
-        files.push(...getToolFiles(full))
-      } else if (entry.endsWith('.ts') && entry !== 'index.ts') {
-        files.push(full)
-      }
-    }
-    return files
-  }
-
-  for (const file of getToolFiles(__dirname)) {
-    const mod = await import(pathToFileURL(file).href)
-    server.registerTool(mod.name, mod.config, mod.handler)
-  }
-}
-```
-
-```typescript
-// src/server.ts — stays this small forever
-import { McpServer }  from '@modelcontextprotocol/server'
-import { serveStdio } from '@modelcontextprotocol/server/stdio'
-import { registerAllTools } from './tools/index.ts'
-
-serveStdio(() => {
-  const server = new McpServer({ name: 'my-api', version: '1.0.0' })
-  registerAllTools(server)
-  return server
-})
-```
-
-Adding a new tool = create one new file. `playbook.config.ts` never changes.
-
----
-
-## 🚢 Deploying MCP Playbook
-
-### Deploy to GitHub Pages
+### GitHub Pages
 
 ```yaml
 # .github/workflows/deploy-playbook.yml
 name: Deploy MCP Playbook
-
 on:
   push:
     branches: [main]
@@ -692,220 +408,119 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
-
-      - run: npm install
-      - run: npm run build          # build your MCP server first
+          node-version: 20
+      - run: npm ci
+      - run: npm run build                      # build your MCP server, if it needs it
       - run: npx mcp-playbook build --output ./docs
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        env:
+          API_KEY: ${{ secrets.API_KEY }}       # only if your config reads it
+      - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
 ```
 
-Every push to `main` auto-rebuilds and redeploys your docs.
-
-### Deploy to Vercel
+### Vercel / Netlify / your own server
 
 ```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Build static docs
-npx mcp-playbook build
-
-# Deploy
-vercel playbook-dist/
-```
-
-### Deploy on your own server (always-on)
-
-```bash
-# Build static docs
-npx mcp-playbook build --output /var/www/mcp-docs
-
-# Serve with nginx — no Node.js needed at view time
-# Just static files
+npx mcp-playbook build                         # writes ./playbook-dist
+vercel deploy playbook-dist --prod             # Vercel
+netlify deploy --dir playbook-dist --prod      # Netlify
+cp -r playbook-dist/* /var/www/mcp-docs/       # nginx / any web server
 ```
 
 ---
 
-## 🔧 Local development (for library contributors)
+## Troubleshooting
 
-If you are contributing to MCP Playbook itself:
+**`Cannot find package 'mcp-playbook'`**
+The package isn't installed in this project. Run `npm install -D mcp-playbook` in the folder that has your `playbook.config.ts`.
 
-```bash
-# Clone the repo
-git clone https://github.com/your-org/mcp-playbook
-cd mcp-playbook
+**`Config not found: playbook.config.ts`**
+Run `npx mcp-playbook init`, or point at your file with `--config path/to/config.ts`.
 
-# Install dependencies
-npm install
+**`Cannot load config` / `Invalid config`**
+The message includes the real cause (a syntax error, a typo…). The config must `export default` an object with a `servers` array.
 
-# Build everything (server/CLI via tsup + React UI via Vite)
-npm run build
+**A server shows a red dot (couldn't connect)**
+1. **stdio:** run the exact `command` + `args` yourself in a terminal. It should start without errors and wait for input. Check that paths are right relative to `cwd`.
+2. **stdio, works in a terminal but not here:** your server probably needs an environment variable. Add it to `env` (see [`env`](#env-secrets-and-settings-for-your-server-optional)).
+3. **http / sse:** make sure the server is running and the `url` includes the path (`/mcp` or `/sse`). Check `headers` if it needs auth.
+4. The terminal running `mcp-playbook dev` shows the full error.
 
-# Test against the included example server
-npx mcp-playbook dev --config example/playbook.config.ts
+**Tool returns 401 / Unauthorized**
+Your server needs credentials. Pass them through `env` (stdio) or `headers` (http/sse).
 
-# Watch mode — rebuilds on every save
-npm run dev          # Terminal 1: rebuilds server/CLI
-npm run dev:client   # Terminal 2: rebuilds React UI
+**Port 4242 is busy**
+`mcp-playbook dev` automatically moves to the next free port and prints the URL. The usual cause is an old `mcp-playbook dev` still running. Find it with `lsof -i :4242` and stop it with `kill <PID>`, or pick another port with `--port 5000`.
 
-# Test as a real user would install it
-npm pack
-# creates mcp-playbook-0.1.0.tgz
-
-mkdir /tmp/test-project && cd /tmp/test-project
-npm init -y
-npm install /path/to/mcp-playbook-0.1.0.tgz
-npx mcp-playbook init
-npx mcp-playbook dev
-```
-
-### Using npm link for active development
-
-```bash
-# Register library globally as a symlink
-cd mcp-playbook
-npm run build
-npm link
-
-# Use in any project
-cd your-project
-npm link mcp-playbook
-npx mcp-playbook dev
-
-# After making changes
-cd mcp-playbook
-npm run build     # changes available immediately — no relinking needed
-```
+**Config changes don't show up**
+Save the file again or click **↻ Refresh** in the top bar. Restarting `dev` always works.
 
 ---
 
-## 🔍 Troubleshooting
+## How it compares
 
-### Config not found
+| | MCP Inspector | MCP Playbook |
+|---|---|---|
+| **Made for** | Debugging the protocol while you build | Documenting and sharing tools with your team |
+| **Shareable URL / static site** | ❌ localhost only | ✅ `mcp-playbook build` |
+| **Examples saved in git** | ❌ | ✅ |
+| **Many servers in one view** | ❌ one at a time | ✅ |
+| **Raw JSON-RPC messages, OAuth debugging** | ✅ | ❌ not the goal |
 
-```bash
-Error: Config not found: playbook.config.ts
+They work well together: **Inspector** for debugging while you build, **MCP Playbook** for docs your team (or customers) can browse.
 
-Fix:
-npx mcp-playbook init
-```
-
-### Port already in use
-
-```bash
-Error: Port 4242 is already in use
-
-Fix:
-npx mcp-playbook dev --port 4243
-```
-
-### Server shows as disconnected
-
-Check the following in order:
-
-1. **stdio transport** — verify `command` and `args` are correct and the file exists
-   ```bash
-   node ./your-server.js   # run it manually — should start without errors
-   ```
-
-2. **HTTP/SSE transport** — verify the server is running at the configured URL
-   ```bash
-   curl http://localhost:3001/mcp   # should respond
-   ```
-
-3. **Environment variables** — if your server needs `API_KEY` etc., pass them via `env` in config
-
-4. **Check the terminal** — the mcp-playbook dev terminal shows connection error details
-
-### dist/ not found (library developers only)
-
-```bash
-Error: Cannot find module './dist/cli/index.js'
-
-Fix: npm run build
-```
-
-### Tool execution returns 401 Unauthorized
-
-Your MCP server needs authentication credentials. Pass them via env:
-
-```typescript
-env: {
-  API_TOKEN: process.env.API_TOKEN!,
-}
-```
-
-Set in your shell:
-
-```bash
-export API_TOKEN=your_token_here
-npx mcp-playbook dev
-```
-
-### Changes to playbook.config.ts not picked up
-
-The config is watched automatically. If it is not updating, click the **↻ Refresh** button in the top bar or restart the dev server.
+MCP Playbook works with servers in **any language**: Node.js, Python, Go, Rust and more. It only uses the standard MCP protocol, over any transport.
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 | Feature | Status |
 |---|---|
-| Core: auto-discovery, docs, Try it, Examples, Schema tabs | ✅ Done |
-| stdio / HTTP / SSE transport | ✅ Done |
-| Hot reload on config change | ✅ Done |
-| Static site build (`mcp-playbook build`) | ✅ Done |
+| Auto-generated docs, Try it, Examples, Schema tabs | ✅ Done |
+| stdio / HTTP / SSE transports | ✅ Done |
+| Live reload on config change | ✅ Done |
+| Static site build | ✅ Done |
 | Multi-server dashboard | ✅ Done |
-| Tool call history / session log | 🗓 Planned |
-| Export as curl / fetch / MCP SDK snippet | 🗓 Planned |
-| Schema diff and changelog when tool definitions change | 🗓 Planned |
-| **Authentication — OAuth 2.0 in the UI** | 🗓 Planned |
-| Per-user auth for shared deployments | 🗓 Planned |
-| Embeddable React component `<MCPPlaybook />` | 🗓 Planned |
-| VS Code extension integration | 🔭 Exploring |
-| Hosted team sharing via URL (cloud version) | 🔭 Exploring |
-| Mock mode — run without a real server | 🔭 Exploring |
-| Semantic search across tool descriptions | 🔭 Exploring |
+| Resources and prompts (not just tools) | 🗓 Planned |
+| Theming via `theme` | 🗓 Planned |
+| Tool call history | 🗓 Planned |
+| Export calls as curl / fetch / SDK snippets | 🗓 Planned |
+| Schema diff when tools change | 🗓 Planned |
+| OAuth 2.0 login in the UI | 🗓 Planned |
+| Embeddable `<MCPPlaybook />` React component | 🗓 Planned |
+| Mock mode (no real server needed) | 🔭 Exploring |
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-PRs and issues are welcome. The MCP ecosystem needs this tool.
+Contributions are very welcome: bug reports, docs, fixes and features. **[Read the contributing guide →](CONTRIBUTING.md)** for setup, project structure, and how to open a PR.
 
 ```bash
-# Clone, build, test
-git clone https://github.com/your-org/mcp-playbook
-npm install
-npm run build
-npx mcp-playbook dev --config example/playbook.config.ts
+git clone https://github.com/rahulnag/mcp-playbook && cd mcp-playbook
+npm install && npm run build
+npx mcp-playbook dev --config example/playbook.config.ts   # runs your local build against the example server
 ```
 
-Please open an issue before submitting large PRs so we can discuss the approach.
-
 ---
 
-## 📄 License
+## License
 
-MIT © your-org
-
----
+MIT © [Rahul Nag](https://www.rahulnag.in)
 
 <div align="center">
 
-**mcp-playbook** · [npm](https://www.npmjs.com/package/mcp-playbook) · [GitHub](https://github.com/your-org/mcp-playbook) · [Issues](https://github.com/your-org/mcp-playbook/issues)
+[npm](https://www.npmjs.com/package/mcp-playbook) · [GitHub](https://github.com/rahulnag/mcp-playbook) · [Issues](https://github.com/rahulnag/mcp-playbook/issues)
 
-*If this library saves you time, give it a ⭐ on GitHub*
+*If MCP Playbook saves you time, give it a ⭐ on GitHub*
 
 </div>

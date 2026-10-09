@@ -43,6 +43,16 @@ export interface PlaybookData {
   description: string
   theme:       { primary?: string }
   servers:     DiscoveredServer[]
+  /** true when served as a static site from `mcp-playbook build` (no live server) */
+  static?:     boolean
+}
+
+// Dev server answers /api/servers; a static build ships data.json instead.
+// Static hosts often rewrite unknown paths to index.html, so check it's JSON.
+async function fetchJSON(url: string): Promise<any | null> {
+  const res = await fetch(url)
+  const isJSON = res.headers.get('content-type')?.includes('application/json')
+  return res.ok && isJSON ? res.json() : null
 }
 
 export function useServers() {
@@ -50,14 +60,18 @@ export function useServers() {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
 
-  const fetchServers = useCallback(async () => {
+  // silent = refetch in the background without flipping the UI into "Connecting..."
+  const fetchServers = useCallback(async (silent = false) => {
     try {
-      setLoading(true)
+      if (!silent) setLoading(true)
       setError(null)
-      const res = await fetch('/api/servers')
-      if (!res.ok) throw new Error(`Server returned ${res.status}`)
-      const json = await res.json()
-      setData(json)
+      const live = await fetchJSON('api/servers').catch(() => null)
+      if (live) return setData(live)
+
+      const built = await fetchJSON('data.json').catch(() => null)
+      if (built) return setData({ ...built, static: true })
+
+      throw new Error('Could not load /api/servers or data.json')
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -69,12 +83,17 @@ export function useServers() {
     fetchServers()
   }, [fetchServers])
 
+  // Manual refresh — asks the server to reconnect to every MCP server
   const refresh = useCallback(async () => {
     try {
-      await fetch('/api/refresh', { method: 'POST' })
+      await fetch('api/refresh', { method: 'POST' })
       await fetchServers()
     } catch {}
   }, [fetchServers])
 
-  return { data, loading, error, refresh }
+  // Hot reload — the server has already re-discovered, so just re-read the data.
+  // Must NOT call /api/refresh: that broadcasts another reload and loops forever.
+  const reload = useCallback(() => fetchServers(true), [fetchServers])
+
+  return { data, loading, error, refresh, reload }
 }

@@ -21,7 +21,7 @@
 import fs from 'fs'
 import path from 'path'
 import { discoverAllServers } from './connector.js'
-import type { PlaybookConfig } from '../config.js'
+import { loadConfig } from './load-config.js'
 
 interface BuildOptions {
   outputDir:  string
@@ -29,9 +29,7 @@ interface BuildOptions {
 }
 
 export async function buildStaticSite(options: BuildOptions) {
-  // Load config
-  const configModule = await import(options.configPath)
-  const config: PlaybookConfig = configModule.default
+  const config = await loadConfig(options.configPath)
 
   // Connect to all servers and discover tools
   const servers = await discoverAllServers(
@@ -58,14 +56,13 @@ export async function buildStaticSite(options: BuildOptions) {
   )
 
   // Copy the static UI bundle
-  const clientDist = path.join(
-    path.dirname(new URL(import.meta.url).pathname),
-    '../../dist/client'
-  )
+  // Compiled layout: dist/cli/index.js or dist/server/build.js → dist/client
+  const clientDist = path.join(__dirname, '../client')
 
-  if (fs.existsSync(clientDist)) {
-    copyDir(clientDist, options.outputDir)
+  if (!fs.existsSync(path.join(clientDist, 'index.html'))) {
+    throw new Error(`UI bundle not found at ${clientDist} — the package was published without dist/client`)
   }
+  copyDir(clientDist, options.outputDir)
 
   const toolCount = servers.reduce((acc, s) => acc + s.tools.length, 0)
   console.log(`  ${servers.length} servers, ${toolCount} tools documented`)

@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsup'
 
-export default defineConfig({
+export default defineConfig(options => ({
   entry: {
     'index':             'src/index.ts',
     'cli/index':         'src/cli/index.ts',
@@ -14,7 +14,8 @@ export default defineConfig({
   format:    ['cjs', 'esm'],
   dts:       true,
   sourcemap: true,
-  clean:     true,
+  // Full builds start clean; watch mode must not wipe dist/client (the UI bundle)
+  clean:     !options.watch,
   target:    'node18',
   platform:  'node',
   splitting: false,
@@ -23,7 +24,7 @@ export default defineConfig({
   external: [
     '@modelcontextprotocol/sdk',
     'chalk', 'chokidar', 'commander',
-    'express', 'open', 'ora', 'ws',
+    'express', 'jiti', 'open', 'ora', 'ws',
     'react', 'react-dom'
   ]
-})
+}))

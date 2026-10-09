@@ -5,13 +5,14 @@
 
 import { useEffect } from 'react'
 
-export function useHotReload(onReload: () => void) {
+export function useHotReload(onReload: () => void, enabled = true) {
   useEffect(() => {
     // Only connect in dev mode (not in static build)
-    if (typeof window === 'undefined') return
+    if (!enabled || typeof window === 'undefined') return
 
     let ws: WebSocket
     let reconnectTimer: ReturnType<typeof setTimeout>
+    let disposed = false
 
     function connect() {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -28,8 +29,8 @@ export function useHotReload(onReload: () => void) {
       }
 
       ws.onclose = () => {
-        // Reconnect after 2 seconds if connection drops
-        reconnectTimer = setTimeout(connect, 2000)
+        // Reconnect after 2 seconds if connection drops (not after unmount)
+        if (!disposed) reconnectTimer = setTimeout(connect, 2000)
       }
 
       ws.onerror = () => {
@@ -40,8 +41,9 @@ export function useHotReload(onReload: () => void) {
     connect()
 
     return () => {
+      disposed = true
       clearTimeout(reconnectTimer)
       ws?.close()
     }
-  }, [onReload])
+  }, [onReload, enabled])
 }

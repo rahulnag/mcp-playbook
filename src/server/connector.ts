@@ -91,58 +91,67 @@ async function connectToServer(
     { capabilities: {} }
   )
 
-  // Create the right transport based on config
-  let transport
+  await client.connect(createTransport(config))
 
+  try {
+    // Fetch tools from the server
+    const { tools } = await client.listTools()
+
+    // Fetch server info if available
+    const serverInfo = client.getServerVersion()
+
+    // Map tools to our format
+    const discoveredTools: DiscoveredTool[] = tools.map(tool => ({
+      name:        tool.name,
+      description: tool.description || '',
+      inputSchema: tool.inputSchema as Record<string, unknown>,
+      examples:    extraExamples[tool.name] || [],
+      tags:        toolTagMap[tool.name]    || []
+    }))
+
+    return {
+      id:      `server-${index}`,
+      name:    config.name,
+      url:     config.url || `${config.command} ${(config.args || []).join(' ')}`,
+      status:  'connected',
+      version: serverInfo?.version || '1.0.0',
+      tools:   discoveredTools
+    }
+  } finally {
+    // Discovery is one-shot — close the connection so stdio child processes
+    // don't pile up on every config reload
+    await client.close().catch(() => {})
+  }
+}
+
+/**
+ * Build the transport for a server config.
+ * Shared by discovery and execution so both honour env / cwd / headers.
+ */
+function createTransport(config: ServerConfig) {
   if (config.transport === 'stdio') {
     if (!config.command) throw new Error(`Server "${config.name}" needs a command for stdio transport`)
-    transport = new StdioClientTransport({
+    return new StdioClientTransport({
       command: config.command,
       args:    config.args    || [],
       env:     config.env     || {},
       cwd:     config.cwd     || process.cwd()
     })
-  } else if (config.transport === 'http') {
+  }
+  if (config.transport === 'http') {
     if (!config.url) throw new Error(`Server "${config.name}" needs a url for http transport`)
-    transport = new StreamableHTTPClientTransport(new URL(config.url), {
+    return new StreamableHTTPClientTransport(new URL(config.url), {
       requestInit: { headers: config.headers || {} }
     })
-  } else if (config.transport === 'sse') {
+  }
+  if (config.transport === 'sse') {
     if (!config.url) throw new Error(`Server "${config.name}" needs a url for sse transport`)
-    transport = new SSEClientTransport(new URL(config.url), {
+    return new SSEClientTransport(new URL(config.url), {
       requestInit: { headers: config.headers || {} }
     })
-  } else {
-    throw new Error(`Unknown transport: ${(config as any).transport}`)
   }
-
-  await client.connect(transport)
-
-  // Fetch tools from the server
-  const { tools } = await client.listTools()
-
-  // Fetch server info if available
-  const serverInfo = client.getServerVersion()
-
-  // Map tools to our format
-  const discoveredTools: DiscoveredTool[] = tools.map(tool => ({
-    name:        tool.name,
-    description: tool.description || '',
-    inputSchema: tool.inputSchema as Record<string, unknown>,
-    examples:    extraExamples[tool.name] || [],
-    tags:        toolTagMap[tool.name]    || []
-  }))
-
-  return {
-    id:      `server-${index}`,
-    name:    config.name,
-    url:     config.url || `${config.command} ${(config.args || []).join(' ')}`,
-    status:  'connected',
-    version: serverInfo?.version || '1.0.0',
-    tools:   discoveredTools
-  }
+  throw new Error(`Unknown transport: ${(config as any).transport}`)
 }
-
 /**
  * Execute a tool call against a specific server.
  * Used by the Try tab in the UI.
@@ -153,28 +162,16 @@ export async function executeTool(
   input: Record<string, unknown>
 ): Promise<{ result: unknown; duration_ms: number; error?: string }> {
 
-  const start = Date.now()
+  const start  = Date.now()
+  const client = new Client(
+    { name: 'mcp-playbook', version: '0.1.0' },
+    { capabilities: {} }
+  )
 
   try {
-    const client = new Client(
-      { name: 'mcp-playbook', version: '0.1.0' },
-      { capabilities: {} }
-    )
-
-    let transport
-    if (serverConfig.transport === 'stdio') {
-      transport = new StdioClientTransport({
-        command: serverConfig.command!,
-        args:    serverConfig.args || [],
-      })
-    } else {
-      transport = new StreamableHTTPClientTransport(new URL(serverConfig.url!))
-    }
-
-    await client.connect(transport)
+    await client.connect(createTransport(serverConfig))
 
     const result = await client.callTool({ name: toolName, arguments: input })
-    await client.close()
 
     return {
       result,
@@ -186,5 +183,7 @@ export async function executeTool(
       duration_ms: Date.now() - start,
       error:       err.message
     }
+  } finally {
+    await client.close().catch(() => {})
   }
 }

@@ -14,10 +14,11 @@ import chalk      from 'chalk'
 import chokidar   from 'chokidar'
 import open       from 'open'
 import { discoverAllServers, executeTool } from './connector.js'
+import { loadConfig } from './load-config.js'
 import type { PlaybookConfig } from '../config.js'
 
 interface DevServerOptions {
-  port:       number
+  port?:      number   // --port flag; falls back to config.port, then 4242
   configPath: string
   open:       boolean
 }
@@ -68,6 +69,10 @@ export async function startDevServer(options: DevServerOptions) {
   const server = createServer(app)
   const wss    = new WebSocketServer({ server })
 
+  // ws re-emits the http server's errors (e.g. EADDRINUSE) on the WebSocketServer.
+  // Without a listener that crashes the process — listenOnFreePort() handles them.
+  wss.on('error', () => {})
+
   app.use(express.json())
 
   // ── Serve static client bundle ──────────────────────────────────
@@ -82,37 +87,31 @@ export async function startDevServer(options: DevServerOptions) {
     console.log(chalk.dim('  API is available but UI will show a placeholder'))
   }
 
-  // ── Config loader ───────────────────────────────────────────────
-  async function loadConfig(): Promise<PlaybookConfig> {
-    // Clear module cache for hot reload
-    const key = require.resolve(options.configPath)
-    delete require.cache[key]
-
-    // Try TypeScript config via ts-node/register if available
-    try {
-      return require(options.configPath).default
-    } catch {
-      // ts-node not available — try pre-compiled JS version
-      const jsPath = options.configPath.replace(/\.ts$/, '.js')
-      if (fs.existsSync(jsPath)) {
-        delete require.cache[require.resolve(jsPath)]
-        return require(jsPath).default
-      }
-      throw new Error(
-        `Cannot load config: ${options.configPath}\n` +
-        `  Make sure ts-node is installed: npm install -D ts-node\n` +
-        `  Or compile your config to JS first.`
-      )
-    }
-  }
-
   // ── Discover servers ────────────────────────────────────────────
   let cachedServers: Awaited<ReturnType<typeof discoverAllServers>> = []
   let cachedConfig:  PlaybookConfig | null = null
 
-  async function refreshServers() {
+  // Only one discovery runs at a time. Requests that arrive mid-refresh are
+  // folded into a single follow-up run instead of stacking up.
+  let refreshing: Promise<void> | null = null
+  let refreshQueued = false
+
+  async function refreshServers(): Promise<void> {
+    if (refreshing) {
+      refreshQueued = true
+      return refreshing
+    }
+    refreshing = doRefresh().finally(() => { refreshing = null })
+    await refreshing
+    if (refreshQueued) {
+      refreshQueued = false
+      await refreshServers()
+    }
+  }
+
+  async function doRefresh() {
     try {
-      const config   = await loadConfig()
+      const config   = await loadConfig(options.configPath)
       cachedConfig   = config
       cachedServers  = await discoverAllServers(
         config.servers,
@@ -154,15 +153,21 @@ export async function startDevServer(options: DevServerOptions) {
   })
 
   app.post('/api/execute', async (req, res) => {
-    const { serverId, toolName, input } = req.body
+    const { serverId, toolName, input } = req.body || {}
     if (!cachedConfig) return res.status(503).json({ error: 'Config not loaded' })
+    if (typeof serverId !== 'string' || typeof toolName !== 'string') {
+      return res.status(400).json({ error: 'serverId and toolName must be strings' })
+    }
 
     const idx          = parseInt(serverId.replace('server-', ''))
     const serverConfig = cachedConfig.servers[idx]
     if (!serverConfig) return res.status(404).json({ error: `Server not found: ${serverId}` })
 
-    const result = await executeTool(serverConfig, toolName, input || {})
-    res.json(result)
+    try {
+      res.json(await executeTool(serverConfig, toolName, input || {}))
+    } catch (err: any) {
+      res.status(500).json({ error: err.message })
+    }
   })
 
   // Fallback — serve index.html for SPA routing
@@ -171,7 +176,7 @@ export async function startDevServer(options: DevServerOptions) {
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath)
     } else {
-      res.send(fallbackHTML(options.port))
+      res.send(fallbackHTML(port))
     }
   })
 
@@ -181,27 +186,49 @@ export async function startDevServer(options: DevServerOptions) {
   })
 
   // ── Config watcher ──────────────────────────────────────────────
+  // Editors often fire several change events per save — debounce them
   const watcher = chokidar.watch(options.configPath, { ignoreInitial: true })
+  let changeTimer: ReturnType<typeof setTimeout> | undefined
   watcher.on('change', () => {
-    console.log(chalk.dim('\n  Config changed — refreshing...'))
-    refreshServers()
+    clearTimeout(changeTimer)
+    changeTimer = setTimeout(() => {
+      console.log(chalk.dim('\n  Config changed — refreshing...'))
+      refreshServers()
+    }, 150)
   })
 
   // ── Start ───────────────────────────────────────────────────────
-  await new Promise<void>((resolve, reject) => {
-    server.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'EADDRINUSE') {
-        reject(new Error(`Port ${options.port} is already in use. Try: --port ${options.port + 1}`))
-      } else {
-        reject(err)
+  // If the port is taken (often an older `mcp-playbook dev` still running),
+  // try the next few ports instead of failing — same behaviour as Vite.
+  async function listenOnFreePort(start: number, attempts = 10): Promise<number> {
+    for (let p = start; p < start + attempts; p++) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const onError = (err: Error) => { server.off('listening', onListening); reject(err) }
+          const onListening = () => { server.off('error', onError); resolve() }
+          server.once('error', onError)
+          server.once('listening', onListening)
+          server.listen(p)
+        })
+        return p
+      } catch (err: any) {
+        if (err.code !== 'EADDRINUSE') throw err
+        console.log(chalk.yellow(`  Port ${p} is in use, trying ${p + 1}...`))
       }
-    })
-    server.listen(options.port, () => resolve())
-  })
+    }
+    throw new Error(
+      `Ports ${start}-${start + attempts - 1} are all in use. Try: --port <number>`
+    )
+  }
+
+  // Load the config before listening: a broken config should stop startup
+  // with a clear error, not print a "Local:" URL for an empty playbook.
+  const initialConfig = await loadConfig(options.configPath)
+  const port = await listenOnFreePort(options.port ?? initialConfig.port ?? 4242)
 
   await refreshServers()
 
-  const url = `http://localhost:${options.port}`
+  const url = `http://localhost:${port}`
   console.log(chalk.dim(`\n  Local:   `) + chalk.cyan(url))
   console.log(chalk.dim(`  Config:  ${options.configPath}\n`))
 

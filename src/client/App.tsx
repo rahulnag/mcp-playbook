@@ -2,7 +2,7 @@
 // Full MCP Playbook UI — wired to real dev server API
 // Designed for backend/fullstack developers building MCP tools
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useServers, type DiscoveredTool, type DiscoveredServer } from './hooks/useServers'
 import { useHotReload } from './hooks/useHotReload'
 import { useExecute } from './hooks/useExecute'
@@ -69,6 +69,44 @@ function Dot({ status }: { status: string }) {
 
 // ─── Parameter input ───────────────────────────────────────────────
 
+// Objects and arrays are edited as JSON text. Only valid JSON is sent to the
+// tool; while the text is invalid the field is cleared and outlined red.
+function JsonInput({ name, value, onChange, style }: {
+  name:     string
+  value:    unknown
+  onChange: (name: string, value: unknown) => void
+  style:    React.CSSProperties
+}) {
+  const format = (v: unknown) => (v === undefined ? '' : JSON.stringify(v, null, 2))
+  const [raw, setRaw]     = useState(format(value))
+  const [valid, setValid] = useState(true)
+
+  // Sync when the value changes from outside (e.g. loading an example)
+  useEffect(() => {
+    try {
+      if (JSON.stringify(JSON.parse(raw)) === JSON.stringify(value)) return
+    } catch {}
+    if (value !== undefined) { setRaw(format(value)); setValid(true) }
+  }, [value])
+
+  function handle(text: string) {
+    setRaw(text)
+    if (!text.trim()) { setValid(true); return onChange(name, undefined) }
+    try { onChange(name, JSON.parse(text)); setValid(true) }
+    catch { onChange(name, undefined); setValid(false) }
+  }
+
+  return (
+    <textarea
+      value={raw}
+      rows={4}
+      placeholder='JSON, e.g. {"key": "value"} or ["a", "b"]'
+      onChange={e => handle(e.target.value)}
+      style={{ ...style, resize: 'vertical', ...(valid ? {} : { border: `1px solid ${C.red}` }) }}
+    />
+  )
+}
+
 function ParamInput({ name, schema, required, value, onChange }: {
   name:     string
   schema:   any
@@ -129,7 +167,11 @@ function ParamInput({ name, schema, required, value, onChange }: {
     )
   }
 
-  if (schema.type === 'number') {
+  if (schema.type === 'object' || schema.type === 'array') {
+    return <JsonInput name={name} value={value} onChange={onChange} style={inputStyle} />
+  }
+
+  if (schema.type === 'number' || schema.type === 'integer') {
     return (
       <input
         type="number"
@@ -154,7 +196,7 @@ function ParamInput({ name, schema, required, value, onChange }: {
 
 // ─── Tool detail ───────────────────────────────────────────────────
 
-function ToolDetail({ tool, server }: { tool: DiscoveredTool; server: DiscoveredServer }) {
+function ToolDetail({ tool, server, isStatic }: { tool: DiscoveredTool; server: DiscoveredServer; isStatic: boolean }) {
   const [tab, setTab]       = useState<'docs' | 'try' | 'examples' | 'schema'>('docs')
   const [inputs, setInputs] = useState<Record<string, unknown>>({})
   const [exampleLabel, setExampleLabel] = useState<string | null>(null)
@@ -177,6 +219,9 @@ function ToolDetail({ tool, server }: { tool: DiscoveredTool; server: Discovered
   function handleRun() {
     execute(server.id, tool.name, inputs)
   }
+
+  // Static builds have no backend to run tools against
+  const canRun = !isStatic && server.status === 'connected'
 
   const tabs = [
     { key: 'docs',     label: 'Docs'    },
@@ -382,24 +427,28 @@ function ToolDetail({ tool, server }: { tool: DiscoveredTool; server: Discovered
             <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <button
                 onClick={handleRun}
-                disabled={running || server.status !== 'connected'}
+                disabled={running || !canRun}
                 style={{
                   padding: '9px 22px',
                   borderRadius: '6px',
-                  cursor: server.status !== 'connected' ? 'not-allowed' : 'pointer',
+                  cursor: !canRun ? 'not-allowed' : 'pointer',
                   border: 'none',
                   background: running ? C.accentLo : C.accent,
                   color: 'white',
                   fontSize: '13px',
                   fontFamily: 'inherit',
                   fontWeight: 600,
-                  opacity: server.status !== 'connected' ? 0.4 : 1,
+                  opacity: !canRun ? 0.4 : 1,
                   transition: 'all 0.12s',
                 }}
               >
                 {running ? '◌  Running...' : '▶  Run tool'}
               </button>
-              {server.status !== 'connected' && (
+              {isStatic ? (
+                <span style={{ fontSize: '12px', color: C.muted }}>
+                  Static docs — run <code>mcp-playbook dev</code> to execute tools
+                </span>
+              ) : server.status !== 'connected' && (
                 <span style={{ fontSize: '12px', color: C.red }}>
                   Server {server.status}
                 </span>
@@ -515,7 +564,7 @@ function ToolDetail({ tool, server }: { tool: DiscoveredTool; server: Discovered
                   }}>
                     {JSON.stringify(ex.input, null, 2)}
                   </pre>
-                  {ex.expectedOutput && (
+                  {ex.expectedOutput !== undefined && (
                     <>
                       <div style={{
                         padding: '6px 14px',
@@ -660,8 +709,8 @@ function ToolCard({ tool, server, selected, onClick }: {
 // ─── Main App ──────────────────────────────────────────────────────
 
 export default function App() {
-  const { data, loading, error, refresh } = useServers()
-  useHotReload(refresh)
+  const { data, loading, error, refresh, reload } = useServers()
+  useHotReload(reload, !!data && !data.static)
 
   const [search, setSearch]           = useState('')
   const [filterServer, setFilterServer] = useState('all')
@@ -908,7 +957,7 @@ export default function App() {
         {/* ── Main panel ── */}
         <main style={{ flex: 1, overflow: 'hidden', background: C.bg }}>
           {selected ? (
-            <ToolDetail tool={selected.tool} server={selected.server} />
+            <ToolDetail tool={selected.tool} server={selected.server} isStatic={!!data?.static} />
           ) : (
             <div style={{
               height: '100%',
