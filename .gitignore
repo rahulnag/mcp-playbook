@@ -18,7 +18,7 @@ node_modules/
 # it should NOT be committed — generated fresh every build
 dist/
 playbook-dist/
-playbook-dist/
+site-dist/
 build/
 out/
 

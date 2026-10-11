@@ -90,60 +90,38 @@ npm unpublish mcp-playbook@0.1.10
 
 ---
 
-## Live demo on GitHub Pages (optional)
+## Project website (GitHub Pages)
 
-You can host the docs generated from `example/` as a live demo, e.g. `https://rahulnag.github.io/mcp-playbook/`, and link it from the README.
+The repo has its own website. It isn't part of the npm package, so library users never get it:
 
-**1.** In the repo, go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
-
-**2.** Add `.github/workflows/pages.yml`:
-
-```yaml
-name: Deploy demo docs
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - run: npx mcp-playbook build --config example/playbook.config.ts --output playbook-dist
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: playbook-dist
-      - id: deployment
-        uses: actions/deploy-pages@v4
+```
+https://rahulnag.github.io/mcp-playbook/              ← README rendered as docs
+https://rahulnag.github.io/mcp-playbook/playground/   ← live demo built from example/
 ```
 
-**3.** Push to `main`. The URL appears in the workflow run and under **Settings → Pages**. Make sure `siteUrl` in `example/playbook.config.ts` matches it, so link previews show the image.
+| What | Where |
+|---|---|
+| Page template + styling | `site/template.html` |
+| Build script (README → HTML, then builds the playground) | `site/build.mjs` |
+| Local preview server | `site/serve.mjs` |
+| Docs content | `README.md` (edit it, and the site follows) |
+| Playground content | `example/playbook.config.ts` + `example/mock-server.mjs` |
+| Output (generated, git-ignored) | `site-dist/` |
+| Deploy workflow | `.github/workflows/pages.yml` |
 
-Notes:
-- Nothing gets committed back to the repo. The site is rebuilt from scratch on every push.
-- The demo shows Docs, Examples and Schema. **Run tool** is disabled on static sites.
-- It works under the `/mcp-playbook/` sub-path because the UI uses relative asset URLs.
+**Run it locally:**
+
+```bash
+npm run site:preview
+# → http://localhost:4300/              docs
+# → http://localhost:4300/playground/   playground
+```
+
+Use `npm run site:build` to only build it into `site-dist/`. The playground on the website is static (**Run tool** is disabled). For a playground where Run works, use `npx mcp-playbook dev --config example/playbook.config.ts`.
+
+**Deploying:** every push to `main` rebuilds and deploys automatically. One-time setup: **Settings → Pages → Build and deployment → Source → GitHub Actions**. To redeploy by hand: **Actions → Deploy website → Run workflow**.
+
+If the site URL ever changes, update `SITE_URL` in `site/build.mjs` and `siteUrl` in `example/playbook.config.ts`, so link previews show the image.
 
 ---
 

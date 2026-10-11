@@ -10,6 +10,8 @@
 [![license](https://img.shields.io/npm/l/mcp-playbook?color=5dcaa5&labelColor=1a1a1a)](LICENSE)
 [![node](https://img.shields.io/node/v/mcp-playbook?color=5dcaa5&labelColor=1a1a1a)](https://nodejs.org)
 
+**[📖 Docs website](https://rahulnag.github.io/mcp-playbook/) · [▶️ Live playground](https://rahulnag.github.io/mcp-playbook/playground/)**
+
 [Quick start](#quick-start) · [Configuration](#configuration) · [Recipes](#server-recipes) · [Commands](#commands) · [Deploying](#deploying-the-docs) · [Troubleshooting](#troubleshooting)
 
 </div>
@@ -84,7 +86,17 @@ Not using Node? See [Server recipes](#server-recipes) for Python, TypeScript, Go
 npx mcp-playbook dev
 ```
 
-Your browser opens at **http://localhost:4242** with all your tools listed. Edit and save the config while it runs, and the page updates on its own.
+Your browser opens at **http://localhost:4242** with all your tools listed, and **Run tool** works. Edit and save the config while it runs, and the page updates on its own.
+
+### 5. Deploy it (optional)
+
+```bash
+npx mcp-playbook build
+```
+
+This creates a **`playbook-dist/`** folder. Upload it to any static host (GitHub Pages, Vercel, Netlify, your own server…) to share your docs as a URL. Set `siteUrl` in the config so shared links show a preview image.
+
+On the hosted site, Docs, Examples and Schema work. **Run tool** is disabled because there's no server behind a static site. Step-by-step guides for each host: [Deploying the docs](#deploying-the-docs).
 
 ---
 
@@ -216,13 +228,42 @@ The same rule as `env` applies: read secrets from `process.env` instead of typin
 
 | Field | What it does | Default |
 |---|---|---|
-| `title` | Name shown in the top bar | `'MCP Playbook'` |
-| `description` | Short text shown on the start screen | none |
+| `title` | Name shown in the top bar and browser tab. Also the page title in search results and link previews ([see below](#page-title-and-link-previews)) | `'MCP Playbook'` |
+| `description` | Short text shown on the start screen. Also the meta description used by search engines and link previews | `'Interactive docs and a live playground for MCP servers.'` |
 | `examples` | Ready-made inputs for your tools ([see below](#examples)) | none |
 | `tags` | Labels for your tools ([see below](#tags)) | none |
 | `port` | Port for `mcp-playbook dev`. The `--port` flag overrides it. If it's busy, the next free port is used. | `4242` |
 | `siteUrl` | Public URL of your deployed docs (e.g. `'https://you.github.io/my-docs'`). Gives link previews on LinkedIn, X, Slack… a proper image. Only used by `build`. | none |
 | `theme` | Reserved for future theming. **Not applied by the UI yet.** | none |
+
+#### Page title and link previews
+
+When you run `mcp-playbook build`, these config fields are written into the hosted page's HTML:
+
+| Config field | Becomes |
+|---|---|
+| `title` | `<title>` (browser tab), `og:title`, `twitter:title` |
+| `description` | `<meta name="description">`, `og:description`, `twitter:description` |
+| `siteUrl` | The full preview-image URL (`og:image`, `twitter:image`) and `og:url` |
+
+So when someone shares your docs link on LinkedIn, X, Slack, WhatsApp and so on, the preview shows **your** title, description and image:
+
+```typescript
+export default defineConfig({
+  title:       'MCP Playbook',
+  description: 'Every tool in the projects MCP server, with a live playground',
+  siteUrl:     'https://rahulnag.github.io/mcp-playbook',   // where you host the built site
+  servers:     [ /* ... */ ],
+})
+```
+
+- Without `siteUrl`, the title and description still work, but most social sites won't show the preview image (they need a full URL).
+- **Your own preview image or tab icon:** after building, replace these files in the output folder:
+  - `og-image.png`: link-preview image, 1200×630 px
+  - `favicon.svg`: browser tab icon (and `apple-touch-icon.png`, 180×180 px, for phones)
+
+  Every `mcp-playbook build` puts the defaults back, so replace them after each build. In CI, add a step after the build, e.g. `cp branding/og-image.png playbook-dist/`.
+- Social sites cache previews. After changing them, refresh with [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) or the equivalent tool.
 
 #### Examples
 
@@ -260,7 +301,7 @@ tags: {
 import { defineConfig } from 'mcp-playbook'
 
 export default defineConfig({
-  title:       'Acme Corp API Playbook',      // optional
+  title:       'MCP Playbook',      // optional
   description: 'Docs for our internal tools', // optional
 
   servers: [
@@ -435,7 +476,7 @@ Good to know:
 - The deployed site shows **Docs, Examples and Schema**. **Run tool is disabled**, because there's no live server behind a static site.
 - Your servers must be **reachable while `build` runs**: stdio servers get started, and http/sse servers must already be running. Any `env` / `headers` secrets must be set at that point.
 - **Secrets are never written to the output.** Values from `env` and `headers` don't appear in the built files.
-- **Link previews:** the page title and description come from your config. Set `siteUrl` to your site's address so shared links show a preview image. To use your own image, replace `og-image.png` (1200×630) in the output folder.
+- **Link previews:** the page title and description come from your config. Set `siteUrl` to your site's address so shared links show a preview image. To use your own image or icon, see [Page title and link previews](#page-title-and-link-previews).
 
 ### GitHub Pages
 

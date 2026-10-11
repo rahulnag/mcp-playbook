@@ -55,6 +55,8 @@
     "build:client": "vite build --config vite.client.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/smoke-test.js",
+    "site:build": "npm run build && node site/build.mjs",
+    "site:preview": "npm run site:build && node site/serve.mjs",
     "prepublishOnly": "npm run typecheck && npm run build && npm test"
   },
   "dependencies": {
@@ -75,6 +77,8 @@
     "@types/react-dom": "^18.0.0",
     "@types/ws": "^8.5.10",
     "@vitejs/plugin-react": "^4.0.0",
+    "highlight.js": "^11.11.1",
+    "marked": "^17.0.6",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "tsup": "^8.0.0",

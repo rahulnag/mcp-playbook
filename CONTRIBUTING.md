@@ -66,6 +66,8 @@ mcp-playbook/
 │   ├── playbook.config.ts     example config used for local testing
 │   └── mock-server.mjs        a small MCP server with 3 tools
 ├── scripts/smoke-test.js      end-to-end check used by `npm test` and CI
+├── site/                      project website (README docs + playground). Not shipped to npm
+├── public/                    favicon + link-preview image used by the UI
 ├── index.html                 Vite entry for the UI
 ├── tsup.config.ts             builds src/cli + src/server → dist/
 └── vite.client.config.ts      builds src/client → dist/client/
@@ -92,6 +94,8 @@ If something breaks, this tells you which file to look in.
 ---
 
 ## 3. Development workflow
+
+> Working on the **project website** (the docs site on GitHub Pages)? Run `npm run site:preview` and open http://localhost:4300. See [RELEASING.md](RELEASING.md#project-website-github-pages).
 
 ### Changing the CLI or server (`src/cli`, `src/server`, `src/config.ts`)
 

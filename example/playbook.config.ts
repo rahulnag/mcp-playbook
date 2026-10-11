@@ -8,7 +8,7 @@
 import { defineConfig } from 'mcp-playbook'
 
 export default defineConfig({
-  title:       'Acme Corp API Playbook',
+  title:       'MCP Playbook',
   description: 'Interactive docs and playground for all our internal MCP tools',
 
   servers: [
@@ -46,7 +46,7 @@ export default defineConfig({
       {
         label:       'New developer onboarding',
         description: 'Standard setup for a new developer joining the team',
-        input:       { name: 'Priya Patel', email: 'priya@acme.com', role: 'developer' }
+        input:       { name: 'Rahul Nag', email: 'mr.rahulnag67@gmail.com', role: 'developer' }
       }
     ]
   },
@@ -59,6 +59,7 @@ export default defineConfig({
 
   port: 4242,
 
-  // Where the GitHub Pages demo is hosted. Gives link previews an absolute image URL
-  siteUrl: 'https://rahulnag.github.io/mcp-playbook'
+  // Where the demo playground is hosted (the project site's /playground/ page).
+  // Gives link previews an absolute image URL
+  siteUrl: 'https://rahulnag.github.io/mcp-playbook/playground'
 })

@@ -1,9 +1,12 @@
-name: Deploy demo docs
+name: Deploy website
+
+# Builds the project website (README docs + example playground) and publishes
+# it to GitHub Pages. One-time setup: Settings → Pages → Source → GitHub Actions.
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:          # lets you run it manually from the Actions tab
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -27,11 +30,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run build
-      - run: npx mcp-playbook build --config example/playbook.config.ts --output playbook-dist
+      - run: npm run site:build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: playbook-dist
+          path: site-dist
       - id: deployment
         uses: actions/deploy-pages@v4

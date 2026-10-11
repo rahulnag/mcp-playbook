@@ -30,8 +30,8 @@ server.tool(
   async ({ userId, include_meta }) => {
     const user = {
       id:        userId,
-      name:      'Arjun Sharma',
-      email:     'arjun@acme.com',
+      name:      'Rahul Nag',
+      email:     'mr.rahulnag67@gamil.com',
       role:      'developer',
       createdAt: '2024-01-15T10:30:00Z',
       ...(include_meta ? { meta: { loginCount: 142, lastIp: '192.168.1.1' } } : {})
