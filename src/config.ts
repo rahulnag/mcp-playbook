@@ -74,6 +74,13 @@ export interface PlaybookConfig {
 
   /** Port for dev server. Default: 4242 */
   port?: number
+
+  /**
+   * Public URL where the static site from `mcp-playbook build` is hosted,
+   * e.g. 'https://you.github.io/my-docs'. Used for link previews: social sites
+   * need an absolute URL for the preview image.
+   */
+  siteUrl?: string
 }
 
 /**

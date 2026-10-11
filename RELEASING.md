@@ -138,7 +138,7 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-**3.** Push to `main`. The URL appears in the workflow run and under **Settings → Pages**.
+**3.** Push to `main`. The URL appears in the workflow run and under **Settings → Pages**. Make sure `siteUrl` in `example/playbook.config.ts` matches it, so link previews show the image.
 
 Notes:
 - Nothing gets committed back to the repo. The site is rebuilt from scratch on every push.

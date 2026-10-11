@@ -93,6 +93,8 @@ Repo → Actions → "Deploy demo docs" → green ✓ → the URL is shown in th
 Repo → Settings → Pages → shows the live URL
 ```
 
+Link previews (LinkedIn, X…) use `siteUrl` from `example/playbook.config.ts`. Make sure it matches this URL, or shared links won't show the preview image.
+
 Then add it near the top of `README.md`:
 
 ```markdown

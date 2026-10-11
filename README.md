@@ -221,6 +221,7 @@ The same rule as `env` applies: read secrets from `process.env` instead of typin
 | `examples` | Ready-made inputs for your tools ([see below](#examples)) | none |
 | `tags` | Labels for your tools ([see below](#tags)) | none |
 | `port` | Port for `mcp-playbook dev`. The `--port` flag overrides it. If it's busy, the next free port is used. | `4242` |
+| `siteUrl` | Public URL of your deployed docs (e.g. `'https://you.github.io/my-docs'`). Gives link previews on LinkedIn, X, Slack… a proper image. Only used by `build`. | none |
 | `theme` | Reserved for future theming. **Not applied by the UI yet.** | none |
 
 #### Examples
@@ -388,52 +389,163 @@ Creates a starter `playbook.config.ts`. It won't overwrite an existing one.
 
 ## Deploying the docs
 
-`mcp-playbook build` produces plain HTML/JS files. You can host them on GitHub Pages, Vercel, Netlify, S3, nginx, or anywhere else, including sub-paths like `/docs/`.
+`mcp-playbook build` creates a **`playbook-dist/` folder of plain HTML, JS and images**. You can host it **anywhere that serves static files**: GitHub Pages, Vercel, Netlify, Cloudflare Pages, AWS S3, your own nginx server, or a company intranet. It also works under sub-paths like `/docs/`. No Node.js server is needed to view it.
+
+### Step 1: Generate the website files
+
+Run this in the folder that has your `playbook.config.ts`:
+
+```bash
+npx mcp-playbook build
+```
+
+It connects to your MCP servers, reads all the tools, and writes the website into a new folder:
+
+```
+playbook-dist/          ← deploy THIS folder
+├── index.html          the page
+├── assets/             JavaScript and CSS
+├── data.json           your tools, baked in at build time
+├── favicon.svg         tab icon
+└── og-image.png        link-preview image
+```
+
+Want a different folder name? Use `--output`:
+
+```bash
+npx mcp-playbook build --output docs-site     # writes ./docs-site instead
+```
+
+Using a different config file? Add `--config path/to/playbook.config.ts`.
+
+### Step 2: Check it locally (optional)
+
+```bash
+npx serve playbook-dist        # open the URL it prints
+```
+
+### Step 3: Upload the folder
+
+Upload the **contents of `playbook-dist/`** (or your `--output` folder) to your host. That's it. Re-run `npx mcp-playbook build` and upload again whenever your tools change.
+
+Step-by-step guides for popular hosts:
 
 Good to know:
 
 - The deployed site shows **Docs, Examples and Schema**. **Run tool is disabled**, because there's no live server behind a static site.
 - Your servers must be **reachable while `build` runs**: stdio servers get started, and http/sse servers must already be running. Any `env` / `headers` secrets must be set at that point.
 - **Secrets are never written to the output.** Values from `env` and `headers` don't appear in the built files.
+- **Link previews:** the page title and description come from your config. Set `siteUrl` to your site's address so shared links show a preview image. To use your own image, replace `og-image.png` (1200×630) in the output folder.
 
 ### GitHub Pages
 
+**1. Turn on Pages.** In your repo, go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
+
+**2. Add your secrets (only if your config reads any).** Go to **Settings → Secrets and variables → Actions → New repository secret** and add each one, e.g. `API_KEY`.
+
+**3. Set `siteUrl`** in `playbook.config.ts` to `https://<your-username>.github.io/<repo-name>`, so shared links show a preview image.
+
+**4. Add this workflow** as `.github/workflows/deploy-playbook.yml`:
+
 ```yaml
-# .github/workflows/deploy-playbook.yml
 name: Deploy MCP Playbook
+
 on:
   push:
     branches: [main]
+  workflow_dispatch:                        # lets you run it manually from the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
       - run: npm ci
-      - run: npm run build                      # build your MCP server, if it needs it
-      - run: npx mcp-playbook build --output ./docs
+      - run: npm run build                  # build your MCP server first, if it needs it
+      - run: npx mcp-playbook build --output playbook-dist
         env:
-          API_KEY: ${{ secrets.API_KEY }}       # only if your config reads it
-      - uses: peaceiris/actions-gh-pages@v4
+          API_KEY: ${{ secrets.API_KEY }}   # only if your config reads it
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+          path: playbook-dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
 ```
 
-### Vercel / Netlify / your own server
+**5. Push to `main`.** When the workflow finishes (check the **Actions** tab), your docs are live at `https://<your-username>.github.io/<repo-name>/`. Every push rebuilds them.
+
+### Vercel
 
 ```bash
-npx mcp-playbook build                         # writes ./playbook-dist
-vercel deploy playbook-dist --prod             # Vercel
-netlify deploy --dir playbook-dist --prod      # Netlify
-cp -r playbook-dist/* /var/www/mcp-docs/       # nginx / any web server
+npm i -g vercel
+npx mcp-playbook build
+vercel deploy playbook-dist --prod
 ```
+
+Or connect your repo in the Vercel dashboard with **Build command:** `npx mcp-playbook build` and **Output directory:** `playbook-dist`.
+
+### Netlify
+
+```bash
+npm i -g netlify-cli
+npx mcp-playbook build
+netlify deploy --dir playbook-dist --prod
+```
+
+Or connect your repo in the Netlify dashboard with **Build command:** `npx mcp-playbook build` and **Publish directory:** `playbook-dist`.
+
+### Cloudflare Pages
+
+```bash
+npx mcp-playbook build
+npx wrangler pages deploy playbook-dist
+```
+
+Or connect your repo in the Cloudflare dashboard with **Build command:** `npx mcp-playbook build` and **Build output directory:** `playbook-dist`.
+
+### AWS S3 (static website hosting)
+
+```bash
+npx mcp-playbook build
+aws s3 sync playbook-dist s3://your-bucket-name --delete
+```
+
+Enable **Static website hosting** on the bucket (or put CloudFront in front of it).
+
+### Your own server (nginx, Apache, IIS…)
+
+```bash
+npx mcp-playbook build --output /var/www/mcp-docs
+```
+
+Point your web server at that folder. Example nginx config:
+
+```nginx
+server {
+  listen 80;
+  server_name docs.yourcompany.com;
+  root /var/www/mcp-docs;
+  index index.html;
+}
+```
+
+> **Dashboard builds (Vercel, Netlify, Cloudflare):** if your config reads secrets with `process.env`, add them under the host's **Environment variables** settings. Your MCP server must also be startable or reachable from the host's build machine. If it isn't (e.g. it only runs inside your company network), run `npx mcp-playbook build` locally or in your own CI, and upload `playbook-dist` with the CLI commands above.
 
 ---
 

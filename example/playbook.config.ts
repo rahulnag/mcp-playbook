@@ -57,5 +57,8 @@ export default defineConfig({
     'Admin':           ['purge_cache', 'get_metrics']
   },
 
-  port: 4242
+  port: 4242,
+
+  // Where the GitHub Pages demo is hosted. Gives link previews an absolute image URL
+  siteUrl: 'https://rahulnag.github.io/mcp-playbook'
 })

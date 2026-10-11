@@ -712,6 +712,10 @@ export default function App() {
   const { data, loading, error, refresh, reload } = useServers()
   useHotReload(reload, !!data && !data.static)
 
+  useEffect(() => {
+    if (data?.title) document.title = data.title
+  }, [data?.title])
+
   const [search, setSearch]           = useState('')
   const [filterServer, setFilterServer] = useState('all')
   const [selected, setSelected]       = useState<{ tool: DiscoveredTool; server: DiscoveredServer } | null>(null)
