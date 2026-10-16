@@ -24,7 +24,7 @@ export default defineConfig(options => ({
   external: [
     '@modelcontextprotocol/sdk',
     'chalk', 'chokidar', 'commander',
-    'express', 'jiti', 'open', 'ora', 'ws',
+    'express', 'jiti', 'open', 'ws',
     'react', 'react-dom'
   ]
 }))
